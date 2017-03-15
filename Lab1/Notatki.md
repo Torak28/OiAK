@@ -59,3 +59,13 @@ gdb r				#Stratujr Nasz program do tej etykiety
 gdb info registers rax 		#Wyświetla informacje o zawartości rejestru rax
 gdb stepi			#Przechodzi o jedna instrukcje maszynową dalej
 ```
+
+### Konstrukcje
+
+`offset(%base, %index, multiplier` - pozwala odczytać lub zapisać ilość bajtów równą `multiplier` pod adresem w pamięci `(offset + zawartość resjestru base + zawartość rejestru index) * multiplier`
+
+My wykorzystujemy to do odczytywania pojedynczych znaków.
+
+### Uwagi
+
+BigToSmall32 niestety nie działa. Nie debugowałem w poszukiwaniu problemu :c

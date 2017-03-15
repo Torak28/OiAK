@@ -14,3 +14,11 @@ Input32: Input32.o
 	ld -o Input32 Input32.o
 Input32.o: Input32.s
 	as -o Input32.o Input32.s
+BigToSmall64: BigToSmall64.o
+	ld -o BigToSmall64 BigToSmall64.o
+BigToSmall64.o: BigToSmall64.s
+	as -o BigToSmall64.o BigToSmall64.s
+BigToSmall32: BigToSmall32.o
+	ld -o BigToSmall32 BigToSmall32.o
+BigToSmall32.o: BigToSmall32.s
+	as -o BigToSmall32.o BigToSmall32.s
