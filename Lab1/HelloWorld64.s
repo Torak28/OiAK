@@ -1,5 +1,6 @@
 #Hello World
 
+#Sekacja zmiennych sterujących pracą. Takie stałe procesorowe
 .data
 STDOUT = 1
 SYSWRITE = 1
@@ -13,13 +14,14 @@ tekst_len = .-tekst
 .globl _start
 
 _start:
+#Printf na zmiennych sterujących. Takie ustawienie do działania potrzebne
 movq $SYSWRITE, %rax
 movq $STDOUT, %rdi
 movq $tekst, %rsi
 movq $tekst_len, %rdx
 syscall
 
-
+#return 0; w terminologii Assemblera
 mov $SYSEXIT, %rax
 mov $EXIT_SUCCESS, %rdi
 syscall
