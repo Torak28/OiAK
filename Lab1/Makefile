@@ -26,3 +26,7 @@ Reverse32: Reverse32.o
 	ld -o Reverse32 Reverse32.o
 Reverse32.o: Reverse32.s
 	as -o Reverse32.o Reverse32.s
+Reverse64: Reverse64.o
+	ld -o Reverse64 Reverse64.o
+Reverse64.o: Reverse64.s
+	as -o Reverse64.o Reverse64.s
