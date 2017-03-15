@@ -7,6 +7,9 @@ SYSWRITE = 1
 SYSEXIT = 60
 EXIT_SUCCESS = 0
 
+ZMIENNA = 0
+RESET = 0xffffffffffffffff
+
 tekst: .ascii "Hello World\n"
 tekst_len = .-tekst
 
