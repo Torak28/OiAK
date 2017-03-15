@@ -68,4 +68,4 @@ My wykorzystujemy to do odczytywania pojedynczych znaków.
 
 ### Uwagi
 
-BigToSmall32 niestety nie działa. Nie debugowałem w poszukiwaniu problemu :c
+Do zrobienia jest Cezar i Odwracanie tekstu
