@@ -29,17 +29,18 @@ movl $BUFLEN, %edx
 int $0x80
 
 #W %rax znajduje sie dlugosc naszego tekstu
+decl %eax
 movl %eax, %edx
-movl $0, %eax
+movl $0, %edi
 
 jmp loop
 
 loop:
-movb textin(, %eax, 1), %al
-xor $0x20, %al
-movb %al, textout(, %eax, 1)
-inc %eax
-cmp %edx, %eax
+movb textin(,%edi,1), %bl
+xor $0x20, %bl
+movb %bl, textout(,%edi,1)
+inc %edi
+cmp %edx, %edi
 jle loop
 jmp printf
 
@@ -47,7 +48,7 @@ jmp printf
 printf:
 movl $SYSWRITE, %eax
 movl $STDOUT, %ebx
-movl $textin, %ecx
+movl $textout, %ecx
 int $0x80
 
 movl $SYSWRITE, %eax
