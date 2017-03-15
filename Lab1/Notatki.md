@@ -68,4 +68,4 @@ My wykorzystujemy to do odczytywania pojedynczych znaków.
 
 ### Uwagi
 
-Do zrobienia jest Cezar i Odwracanie tekstu
+Do zrobienia jest Cezar

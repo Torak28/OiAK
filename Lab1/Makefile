@@ -22,3 +22,7 @@ BigToSmall32: BigToSmall32.o
 	ld -o BigToSmall32 BigToSmall32.o
 BigToSmall32.o: BigToSmall32.s
 	as -o BigToSmall32.o BigToSmall32.s
+Reverse32: Reverse32.o
+	ld -o Reverse32 Reverse32.o
+Reverse32.o: Reverse32.s
+	as -o Reverse32.o Reverse32.s
