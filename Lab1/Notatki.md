@@ -66,6 +66,21 @@ gdb stepi			#Przechodzi o jedna instrukcje maszynową dalej
 
 My wykorzystujemy to do odczytywania pojedynczych znaków.
 
+### SVN
+
+**svn update** Pull z serwera na local
+**svn add** Dodanie pliczków
+**svn commit -m ""** Komit z wiadomością
+**svn status** Pokazuje status svn-a
+**svn log** Wykaz komitów
+
 ### Uwagi
 
-Do zrobienia jest Cezar
+* Do wszystkiego ma być ładna dokumentacja w readme.txt
+* Makefile ma banglać jak ta lala zgodnie z readme.txt
+* Jak działa na laku to znaczy że oficjalnie działa
+
+### TODO:
+
+Do zrobienia jest Cezar, Minimalna z listy
+
