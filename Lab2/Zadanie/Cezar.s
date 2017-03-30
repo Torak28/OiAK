@@ -87,6 +87,7 @@ mala_litera:
 	je MY
 	movb $0x7a, %al
 	cmp %al, %bl
+	je MZ
 	addb $0x2, %bl
 	movb %bl, textout(,%edi,1)
 	jmp dalej
