@@ -11,7 +11,7 @@ HexToBin: HexToBin.o
 HexToBin.o: HexToBin.s
 	as -o HexToBin.o HexToBin.s
 Cezar: Cezar.o
-	ld - Cezar Cezar.o
+	ld -o Cezar Cezar.o
 Cezar.o: Cezar.s
 	as -o Cezar.o Cezar.s
 clean:
