@@ -10,7 +10,12 @@ HexToBin: HexToBin.o
 	ld -o HexToBin HexToBin.o
 HexToBin.o: HexToBin.s
 	as -o HexToBin.o HexToBin.s
+Cezar: Cezar.o
+	ld - Cezar Cezar.o
+Cezar.o: Cezar.s
+	as -o Cezar.o Cezar.s
 clean:
 	rm -f FindMin FindMin.o	
 	rm -f FindMax FindMax.o
 	rm -f HexToBin HexToBin.o
+	rm -f Cezar Cezar.o
