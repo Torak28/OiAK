@@ -9,5 +9,8 @@
 | shr A B | Robi przesuniecie bitowe w prawo o A, czyli przy A = 1, dzielenie przez 2 |
 | shl A B | To samo co powyższe ale w lewno |
 
+### Debugowanie gcc
 
++ Zmieniamy **start** na **main**
++ Kompilujemy przez gcc z flagą *-gstabs*
 
