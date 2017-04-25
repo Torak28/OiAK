@@ -1,7 +1,7 @@
 HexToBin: HexToBin.o
 	ld -o HexToBin HexToBin.o
 HexToBin.o: HexToBin.s
-	as -o HexToBin.o HexToBin.s
+	as -o HexToBin.o -gstabs HexToBin.s
 v1: v1.o
 	ld -o v1 v1.o
 v1.o: v1.s

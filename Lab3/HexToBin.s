@@ -21,30 +21,51 @@ tekst_len = .-tekst
 .globl _start
 
 _start:
-#Printf na zmiennych sterujących. Takie ustawienie do działania potrzebne
-movl $SYSREAD, %eax
-movl $STDIN, %ebx
-movl $textin, %ecx
-movl $BUFLEN, %edx
-int $0x80
+	/*Wczytanie znakow z kalwiatury do bufora textin*/
+	movl $SYSREAD, %eax
+	movl $STDIN, %ebx
+	movl $textin, %ecx
+	movl $BUFLEN, %edx
+	int $0x80
 
-#W %rax znajduje sie dlugosc naszego tekstu
-decl %eax
-movl %eax, %r9d
-dec %r9d
-movl $4, %ebx
-mull %ebx
-movl %eax, %r8d
-movl $0, %edi
-movl $0, %esi
-movl $0, %r10d
-
+	/*W %eax znajduje sie dlugosc naszego tekstu dlatego przenosimy ją
+	do rejestru %r9d, by była tam pamiętana
+	Operacja pomniejszania %eax usuwa nam znak nowej linii przez co liczba
+	1234 ma dlugosc 4*/
+	decl %eax
+	movl %eax, %r9d
+	movl $0, %r11d
+	/*Pomniejszamy jeszcze o jeden wejscie r9d jako że poslugujemy sie tutaj nomenklatura
+	 tablicowa, tj. numerujemy od 0 a nie od 1*/
+	dec %r9d
+	/*Do %ebx wrzucam 4 jako dlugosc reprezentacji binarnej po przeksztalceniu jednej
+	liczby w hexie.
+	Dlugosc maksymalnego wyniku przechowuje w r8d*/
+	movl $4, %ebx
+	mull %ebx
+	movl %eax, %r8d
+	/*Ustawienie wszystkoch licznikow*/
+	movl $0, %edi
+	movl $0, %esi
+	movl $0, %r10d
+	movl $4, %r12d
+	/*PODUMOWANIE
+	  r11d - dlugosc poprawnie wpisanych znakow
+	  r9d - maksymalna dlugosc wejscia, bedzie zmiejszana przy wylawianiu poszczegolnych liczb
+	  r8d - maksymalna dlugosc wyniku, bedzie zmiejszana przy wylawianiu posczegolnych liczb
+	  edi - reset na 0, ot takie przygotowanie
+	  esi - reset na 0, ot takie przygotowanie
+	  r10d - Aktualnie badana cyfra w ciągu wejsciowym, dla Nas na poczatek to oczywiscie 0
+	  r12d - Stala porzebna do odwracania binarki*/
 jmp sprawdzanie_czy_Hex
 
 sprawdzanie_czy_Hex:
+	/*Ustawiamy licznik edi na odpowiednia wartosc*/
 	movl %r10d, %edi
+	/*ecx jako nasz licznik petli dla pojedynczego znaku*/
 	movl $4, %ecx
-	movb textin(,%edi,1), %al	#Litera Naszego ciagu
+	/*Wrzucamy do al nasza cyfre z wejscia*/
+	movb textin(,%edi,1), %al
 	movb $0x30, %bl
 	cmp %bl, %al
 	jge liczba_lub_litera
@@ -64,16 +85,20 @@ moze_litera:
 	jmp nic
 	
 nic:
-	subl $4, %r8d			#To napewno bo musimy mieć pewnośc co do długości wyjścia
-	jmp zamiana			#Nieczego nie piszemy
+	/*Nic co nas interesuje wiec zmiejszamy dlugosc wyniku o 4*/
+	subl $4, %r8d
+	#subl $1, %r9d Nie wiem czy potrzebne bo w sumie po co nam ilosc przetworzonych
+	jmp zamiana
 
 pre_chr:
 	subb $55, %al
 	movl $0, %ebx
+	inc %r11d 
 	jmp bin
 pre_int:
 	subb $48, %al
 	movl $0, %ebx
+	inc %r11d
 	jmp bin
 
 bin:
@@ -94,8 +119,15 @@ zero:
 	inc %ebx
 	jmp bin
 
-zamiana:					
-	jmp kolejny_znak			#Błędy młodości
+zamiana:
+	/*q i 3 dla pierwszej liczby potem 4 i 7?*/	
+	movl %r11d, %eax
+	dec %eax
+	mull %r12d
+	movl %eax, %edi
+	addl $3, %eax
+	movl %eax, %edx				
+	jmp odwracanie
 
 odwracanie:
 	movb textout(,%edi,1), %al
@@ -109,6 +141,9 @@ odwracanie:
 	jmp odwracanie
 
 kolejny_znak:
+	/*Sprawdzamy czy przejechalismy po calym wejsciu,
+	 W r10d trzymamy ilosc aktualnie przerobionych w 
+	 r9d trzymamy maks do zrobienia*/
 	cmp %r9d, %r10d
 	je wypisanie
 	inc %r10d
