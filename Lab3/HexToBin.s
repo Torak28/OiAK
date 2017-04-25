@@ -1,5 +1,14 @@
 #Heks na Bin
 
+/*
+(gdb) print (0x6001f0)
+$8 = 6291952
+(gdb) print {char}(0x6001f0)
+$9 = 49 '1'
+*/
+
+
+
 #Sekacja zmiennych sterujących pracą. Takie stałe procesorowe
 .data
 STDIN = 0
@@ -120,7 +129,7 @@ zero:
 	jmp bin
 
 zamiana:
-	/*q i 3 dla pierwszej liczby potem 4 i 7?*/	
+	/*Funkcja ustawiające liczniki na odpowiednich miejscach przed odwracaniem*/	
 	movl %r11d, %eax
 	dec %eax
 	mull %r12d
@@ -145,16 +154,19 @@ kolejny_znak:
 	 W r10d trzymamy ilosc aktualnie przerobionych w 
 	 r9d trzymamy maks do zrobienia*/
 	cmp %r9d, %r10d
-	je wypisanie
+	je wypisanieWszystkiego
 	inc %r10d
 	jmp sprawdzanie_czy_Hex
 
-wypisanie:
-	movl $SYSWRITE, %eax
-	movl $STDOUT, %ebx
-	movl $textout, %ecx
-	movl %r8d, %edx
-	int $0x80
+wypisanieWszystkiego:	
+	movq $textout, %r15
+
+	/*Wypisanie calosci*/
+	movq $1, %rax
+	movq $1, %rdi
+	movq %r15, %rsi 
+	movq %r8, %rdx
+	syscall
 
 	movl $SYSWRITE, %eax
 	movl $STDOUT, %ebx
