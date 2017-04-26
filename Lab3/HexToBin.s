@@ -72,20 +72,24 @@ sprawdzanie_czy_Hex:
 	movl $4, %ecx
 	/*Wrzucamy do al nasza cyfre z wejscia*/
 	movb textin(,%edi,1), %al
-	movb $0x30, %bl
+	#movb $0x30, %bl
+	movb $'0' %bl
 	cmp %bl, %al
 	jge liczba_lub_litera
 	jmp nic
 liczba_lub_litera:
-	movb $0x39, %bl
+	#movb $0x39, %bl
+	movb $'9', %bl
 	cmp %bl, %al
 	jle pre_int
-	movb $0x41, %bl
+	#movb $0x41, %bl
+	movb $'A', %bl
 	cmp %bl, %al
 	jge moze_litera
 	jmp nic
 moze_litera:
-	movb $0x46, %bl
+	#movb $0x46, %bl
+	movb $'F', %bl
 	cmp %bl, %al
 	jle pre_chr
 	jmp nic
@@ -216,7 +220,11 @@ eksp2:
         inc %edx
 eksp3:
 	mov test, %al
-
+eksp4:
+	mov $test, %al
+eksp5:
+	movq $0, %edi
+	movl test(, %edi, 8), %al
 
 
 	/*Wypisanie calosci*/
