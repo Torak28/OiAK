@@ -16,6 +16,7 @@ BUFLEN = 512
 .comm textout, 64
 .comm binarka, 64
 .comm sklejenie, 8
+.comm wynik, 65
 
 .text
 tekst: .ascii "\n"
@@ -207,13 +208,17 @@ dalsze_odejmowanie:
 
 pre_sklejanie:
 	/*r13d - ilosc do przelecenia
-	  r14d - aktalnie badany*/
-	movl %r8d, %r13d
+	  r14d - aktalnie badany
+	  esi jest od 7 jako ze kopiowanie z pamieci jest little endianem
+	  r15d - dlugosc wyniku
+	*/
+	movl $64, %r13d
 	movl $0, %r14d
+	movl $0, %r15d
 	movl $0, %edx
 	movb $0, %al
 	movb $0, %ah
-	movl $0, %esi
+	movl $7, %esi
 	jmp sklejanie
 
 sklejanie:
@@ -251,22 +256,42 @@ sklejanie:
 	addb %ah, %al			#al 1010 0010	0xa4
 	inc %edx
 	
+	cmp %eax, %r14d
+	je dalej
 	movb %al, sklejenie(,%esi,1) 	
+	inc %r15d
+	inc %r15d
 
+dalej:
 	subl $8, %r13d
 	cmp %r13d, %r14d
 	jl dalsze_sklejanie
-	jmp koniec
+	jmp dodawanie
 
 dalsze_sklejanie:
-	inc %esi
+	dec %esi
 	jmp sklejanie
 	
-koniec:
-	movb $0xa4, %al
-	movb $0x10, %ah
-	nop	
-	nop
+dodawanie:
+	movl $0, %edi
+	movq sklejenie(, %edi, 8), %rbx
+	movq sklejenie(, %edi, 8), %rax
+	/*Usuwanie 0*/
+	shr $12, %rax
+	shr $12, %rbx
+	addq %rax, %rbx
+	jc przeniesienie
+	jmp bez_przeniesienia
+
+przeniesienie:
+	jmp koniec
+
+bez_przeniesienia:
+	movl $0, %esi
+	movq %rbx, wynik(,%esi,1)
+	jmp koniec
+
+koniec:	
 	mov $SYSEXIT, %eax
 	mov $EXIT_SUCCESS, %ebx
 	int $0x80
