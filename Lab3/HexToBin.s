@@ -15,6 +15,9 @@ BUFLEN = 512
 .comm textin, 512
 .comm textout, 64
 .comm test, 64
+.comm test2, 64
+.comm spr, 2
+.comm sklejenieT,4
 
 .text
 tekst: .ascii "\n"
@@ -73,7 +76,7 @@ sprawdzanie_czy_Hex:
 	/*Wrzucamy do al nasza cyfre z wejscia*/
 	movb textin(,%edi,1), %al
 	#movb $0x30, %bl
-	movb $'0' %bl
+	movb $'0', %bl
 	cmp %bl, %al
 	jge liczba_lub_litera
 	jmp nic
@@ -187,11 +190,49 @@ wypisanieWszystkiego:
 	movq $calosc, %rsi
 	movq $calosc_len, %rdx
 	syscall
-eksp:
-	movq $1010, %r10
-	movq $1, %r11
-	addq %r11, %r10
+
+eksp0:
+	/*Wrzucanie do al bezpośredni i skeljanie*/
+	movl $0, %edx
+	movb $0xAB, %al
+	movb %al, spr(,%edx,1)
+
+	inc %edx
+	movb $0xBA, %al
+        movb %al, spr(,%edx,1)
+
+	movb $0, %al
+	movl $0, %edi
+	
+	mov spr, %ax
+
+eksp1:
+	/*Wrzucanie do al bezpośredniej liczby binarnej*/
+	movl $0, %edx
+	movb $0b1010, %al
+
 eksp2:
+	movl $0, %edx
+	movb $0b1010, %al
+	movb %al, spr(,%edx,1)
+
+	inc %edx
+	movb $0b1011, %al
+        movb %al, spr(,%edx,1)
+
+	movb $0, %al
+	movl $0, %edx
+	movb spr(,%edx,1),%al		#al 0000 1010
+	shlb $4, %al			#al 1010 0000
+	inc %edx
+	movb spr(,%edx,1),%ah		#ah 0000 1011
+	addb %ah, %al			#al 1010 1011
+	
+
+	/*SPR: a[1010] b[1011]*/
+
+eksp3:
+	/*Wsadzam do al 1010 1010*/
 	movl $0, %edx
 	movb $1, %al
 	movb %al, test(,%edx,1)
@@ -205,7 +246,6 @@ eksp2:
 	movb $0, %al
         movb %al, test(,%edx,1)
         inc %edx
-	movl $0, %edx
         movb $1, %al
         movb %al, test(,%edx,1)
         inc %edx
@@ -215,17 +255,138 @@ eksp2:
         movb $1, %al
         movb %al, test(,%edx,1)
         inc %edx
-        movb $0, %al
+        movb $1, %al
         movb %al, test(,%edx,1)
         inc %edx
-eksp3:
-	mov test, %al
-eksp4:
-	mov $test, %al
-eksp5:
-	movq $0, %edi
-	movl test(, %edi, 8), %al
+	/*test 1 0 1 0 1 0 1 1
+		     a       b*/
 
+	movl $0, %edx
+	movb $0, %al
+	movb test(,%edx,1), %al		#al 0000 0001
+	inc %edx
+	movb test(,%edx,1), %ah		#ah 0000 0001
+	shlb $1, %al			#al 0000 0010
+	addb %ah, %al			#al 0000 0011
+	inc %edx
+	movb test(,%edx,1), %ah		#ah 0000 0001
+	shlb $1, %al			#al 0000 0110
+	addb %ah, %al			#al 0000 0111
+	inc %edx
+	movb test(,%edx,1), %ah		#ah 0000 0001
+	shlb $1, %al			#al 0000 1110
+	addb %ah, %al			#al 0000 1111
+
+	inc %edx
+	movb test(,%edx,1), %ah		#ah 0000 0001
+	shlb $1, %al			#al 0001 1110
+	addb %ah, %al			#al 0001 1111
+	inc %edx
+	movb test(,%edx,1), %ah		#ah 0000 0001
+	shlb $1, %al			#al 0011 1110
+	addb %ah, %al			#al 0011 1111
+	inc %edx
+	movb test(,%edx,1), %ah		#ah 0000 0001
+	shlb $1, %al			#al 0111 1110
+	addb %ah, %al			#al 0111 1111
+	inc %edx
+	movb test(,%edx,1), %ah		#ah 0000 0001
+	shlb $1, %al			#al 1111 1110
+	addb %ah, %al			#al 1111 1111
+
+	movl $0, %edx
+	movb %al, sklejenieT(,%edx,1)
+
+eksp4:
+	movb $0, %al
+	/*Wsadzam do al 1010 0000*/
+	movl $0, %edx
+	movb $1, %al
+	movb %al, test2(,%edx,1)
+	inc %edx
+	movb $0, %al
+        movb %al, test2(,%edx,1)
+        inc %edx
+	movb $1, %al
+        movb %al, test2(,%edx,1)
+        inc %edx
+	movb $0, %al
+        movb %al, test2(,%edx,1)
+	/*test 1 0 1 0 0 0 0 0
+		     a       0*/
+
+	movl $0, %edx
+	movb $0, %al
+	movb test2(,%edx,1), %al	#al 0000 0001
+	inc %edx
+	movb test2(,%edx,1), %ah	#ah 0000 0001
+	shlb $1, %al			#al 0000 0010
+	addb %ah, %al			#al 0000 0011
+	inc %edx
+	movb test2(,%edx,1), %ah	#ah 0000 0001
+	shlb $1, %al			#al 0000 0110
+	addb %ah, %al			#al 0000 0111
+	inc %edx
+	movb test2(,%edx,1), %ah	#ah 0000 0001
+	shlb $1, %al			#al 0000 1110
+	addb %ah, %al			#al 0000 1111
+
+	inc %edx
+	movb test2(,%edx,1), %ah	#ah 0000 0001
+	shlb $1, %al			#al 0001 1110
+	addb %ah, %al			#al 0001 1111
+	inc %edx
+	movb test2(,%edx,1), %ah	#ah 0000 0001
+	shlb $1, %al			#al 0011 1110
+	addb %ah, %al			#al 0011 1111
+	inc %edx
+	movb test2(,%edx,1), %ah	#ah 0000 0001
+	shlb $1, %al			#al 0111 1110
+	addb %ah, %al			#al 0111 1111
+	inc %edx
+	movb test2(,%edx,1), %ah	#ah 0000 0001
+	shlb $1, %al			#al 1111 1110
+	addb %ah, %al			#al 1111 1111
+
+	movl $1, %edx
+	movb %al, sklejenieT(,%edx,1)
+	
+eksp6:
+	movl $0, %edi
+	movb test(, %edi, 8), %al
+	/*
+	info registers al 	0x1
+	info registers rax	0x1
+	*/
+eksp7:
+	movl $0, %edi
+	movq test(, %edi, 8), %rax
+	/*
+	info registers al 	0x1
+	info registers rax	0x1000010010100
+	*/
+eksp8:
+	movb $0xaa, %al
+	/*
+	info registers al 	0xaa
+	info registers rax	0x10001000100aa
+	*/
+eksp9:
+	movb $10101010, %al
+	/*
+	$10101010 zamienia się na $0x12
+	info registers al 	0x12
+	info registers rax	0x1000100010012
+	*/
+
+	/*
+	Czy po eksp2 w test jest aa?
+	Czy eksp3 i eksp4 daja to samo? nope
+	Czy eksp5 i eksp6 daja to samo? nope
+	*/
+	nop
+	nop
+	nop
 
 	/*Wypisanie calosci*/
 	movq $1, %rax
