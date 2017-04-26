@@ -14,10 +14,8 @@ BUFLEN = 512
 .bss
 .comm textin, 512
 .comm textout, 64
-.comm test, 64
-.comm test2, 64
-.comm spr, 2
-.comm sklejenieT,4
+.comm binarka, 64
+.comm sklejenie, 8
 
 .text
 tekst: .ascii "\n"
@@ -75,23 +73,19 @@ sprawdzanie_czy_Hex:
 	movl $4, %ecx
 	/*Wrzucamy do al nasza cyfre z wejscia*/
 	movb textin(,%edi,1), %al
-	#movb $0x30, %bl
 	movb $'0', %bl
 	cmp %bl, %al
 	jge liczba_lub_litera
 	jmp nic
 liczba_lub_litera:
-	#movb $0x39, %bl
 	movb $'9', %bl
 	cmp %bl, %al
 	jle pre_int
-	#movb $0x41, %bl
 	movb $'A', %bl
 	cmp %bl, %al
 	jge moze_litera
 	jmp nic
 moze_litera:
-	#movb $0x46, %bl
 	movb $'F', %bl
 	cmp %bl, %al
 	jle pre_chr
@@ -184,232 +178,95 @@ wypisanieWszystkiego:
 	movq $tekst_len, %rdx
 	syscall
 
-	/*EKSPERYMENT*/
-	movq $1, %rax
-	movq $1, %rdi
-	movq $calosc, %rsi
-	movq $calosc_len, %rdx
-	syscall
+	jmp pre_odejmowanie_z_bufora
 
-eksp0:
-	/*Wrzucanie do al bezpośredni i skeljanie*/
-	movl $0, %edx
-	movb $0xAB, %al
-	movb %al, spr(,%edx,1)
-
-	inc %edx
-	movb $0xBA, %al
-        movb %al, spr(,%edx,1)
-
-	movb $0, %al
+pre_odejmowanie_z_bufora:
+	/*r8d - dlugosc binarki*/
+	movl %r8d, %r13d
+	dec %r13d
+	movl $0, %r14d
 	movl $0, %edi
+	movl $0, %esi
+	jmp odejmowanie_z_bufora
+
+odejmowanie_z_bufora:
+	/*r13d - ilosc do przelecenia
+	  r14d - aktalnie badany*/
+	movb textout(,%edi,1), %al
+	subb $48, %al
+	movb %al, binarka(,%esi,1)
+	inc %r14d
+	inc %edi
+	cmp %r13d, %r14d
+	jle dalsze_odejmowanie
+	jmp pre_sklejanie
+
+dalsze_odejmowanie:
+	inc %esi
+	jmp odejmowanie_z_bufora
+
+pre_sklejanie:
+	/*r13d - ilosc do przelecenia
+	  r14d - aktalnie badany*/
+	movl %r8d, %r13d
+	movl $0, %r14d
+	movl $0, %edx
+	movb $0, %al
+	movb $0, %ah
+	movl $0, %esi
+	jmp sklejanie
+
+sklejanie:
+	/*textout przechowuje 1 0 1 0 0 1 0 0
+	*/
+	movb binarka(,%edx,1), %al	#al 0000 0001	0x1
+	inc %edx
+	movb binarka(,%edx,1), %ah	#ah 0000 0000	0x0
+	shlb $1, %al			#al 0000 0010	0x2
+	addb %ah, %al			#al 0000 0010	0x2
+	inc %edx
+	movb binarka(,%edx,1), %ah	#ah 0000 0001	0x1
+	shlb $1, %al			#al 0000 0100	0x4
+	addb %ah, %al			#al 0000 0101	0x5
+	inc %edx
+	movb binarka(,%edx,1), %ah	#ah 0000 0000	0x0
+	shlb $1, %al			#al 0000 1010	0xa
+	addb %ah, %al			#al 0000 1010	0xa
+
+	inc %edx
+	movb binarka(,%edx,1), %ah	#ah 0000 0000	0x0
+	shlb $1, %al			#al 0001 0100	0x14
+	addb %ah, %al			#al 0001 0101	0x15
+	inc %edx
+	movb binarka(,%edx,1), %ah	#ah 0000 0001	0x1
+	shlb $1, %al			#al 0010 1000	0x28
+	addb %ah, %al			#al 0010 1001	0x29
+	inc %edx
+	movb binarka(,%edx,1), %ah	#ah 0000 0000	0x0
+	shlb $1, %al			#al 0101 0010	0x52
+	addb %ah, %al			#al 0101 0010	0x52
+	inc %edx
+	movb binarka(,%edx,1), %ah	#ah 0000 0000	0x0
+	shlb $1, %al			#al 1010 0100	0xa4
+	addb %ah, %al			#al 1010 0010	0xa4
+	inc %edx
 	
-	mov spr, %ax
+	movb %al, sklejenie(,%esi,1) 	
 
-eksp1:
-	/*Wrzucanie do al bezpośredniej liczby binarnej*/
-	movl $0, %edx
-	movb $0b1010, %al
-
-eksp2:
-	movl $0, %edx
-	movb $0b1010, %al
-	movb %al, spr(,%edx,1)
-
-	inc %edx
-	movb $0b1011, %al
-        movb %al, spr(,%edx,1)
-
-	movb $0, %al
-	movl $0, %edx
-	movb spr(,%edx,1),%al		#al 0000 1010
-	shlb $4, %al			#al 1010 0000
-	inc %edx
-	movb spr(,%edx,1),%ah		#ah 0000 1011
-	addb %ah, %al			#al 1010 1011
-	
-
-	/*SPR: a[1010] b[1011]*/
-
-eksp3:
-	/*Wsadzam do al 1010 1010*/
-	movl $0, %edx
-	movb $1, %al
-	movb %al, test(,%edx,1)
-	inc %edx
-	movb $0, %al
-        movb %al, test(,%edx,1)
-        inc %edx
-	movb $1, %al
-        movb %al, test(,%edx,1)
-        inc %edx
-	movb $0, %al
-        movb %al, test(,%edx,1)
-        inc %edx
-        movb $1, %al
-        movb %al, test(,%edx,1)
-        inc %edx
-        movb $0, %al
-        movb %al, test(,%edx,1)
-        inc %edx
-        movb $1, %al
-        movb %al, test(,%edx,1)
-        inc %edx
-        movb $1, %al
-        movb %al, test(,%edx,1)
-        inc %edx
-	/*test 1 0 1 0 1 0 1 1
-		     a       b*/
-
-	movl $0, %edx
-	movb $0, %al
-	movb test(,%edx,1), %al		#al 0000 0001
-	inc %edx
-	movb test(,%edx,1), %ah		#ah 0000 0001
-	shlb $1, %al			#al 0000 0010
-	addb %ah, %al			#al 0000 0011
-	inc %edx
-	movb test(,%edx,1), %ah		#ah 0000 0001
-	shlb $1, %al			#al 0000 0110
-	addb %ah, %al			#al 0000 0111
-	inc %edx
-	movb test(,%edx,1), %ah		#ah 0000 0001
-	shlb $1, %al			#al 0000 1110
-	addb %ah, %al			#al 0000 1111
-
-	inc %edx
-	movb test(,%edx,1), %ah		#ah 0000 0001
-	shlb $1, %al			#al 0001 1110
-	addb %ah, %al			#al 0001 1111
-	inc %edx
-	movb test(,%edx,1), %ah		#ah 0000 0001
-	shlb $1, %al			#al 0011 1110
-	addb %ah, %al			#al 0011 1111
-	inc %edx
-	movb test(,%edx,1), %ah		#ah 0000 0001
-	shlb $1, %al			#al 0111 1110
-	addb %ah, %al			#al 0111 1111
-	inc %edx
-	movb test(,%edx,1), %ah		#ah 0000 0001
-	shlb $1, %al			#al 1111 1110
-	addb %ah, %al			#al 1111 1111
-
-	movl $0, %edx
-	movb %al, sklejenieT(,%edx,1)
-
-eksp4:
-	movb $0, %al
-	/*Wsadzam do al 1010 0000*/
-	movl $0, %edx
-	movb $1, %al
-	movb %al, test2(,%edx,1)
-	inc %edx
-	movb $0, %al
-        movb %al, test2(,%edx,1)
-        inc %edx
-	movb $1, %al
-        movb %al, test2(,%edx,1)
-        inc %edx
-	movb $0, %al
-        movb %al, test2(,%edx,1)
-	/*test 1 0 1 0 0 0 0 0
-		     a       0*/
-
-	movl $0, %edx
-	movb $0, %al
-	movb test2(,%edx,1), %al	#al 0000 0001
-	inc %edx
-	movb test2(,%edx,1), %ah	#ah 0000 0001
-	shlb $1, %al			#al 0000 0010
-	addb %ah, %al			#al 0000 0011
-	inc %edx
-	movb test2(,%edx,1), %ah	#ah 0000 0001
-	shlb $1, %al			#al 0000 0110
-	addb %ah, %al			#al 0000 0111
-	inc %edx
-	movb test2(,%edx,1), %ah	#ah 0000 0001
-	shlb $1, %al			#al 0000 1110
-	addb %ah, %al			#al 0000 1111
-
-	inc %edx
-	movb test2(,%edx,1), %ah	#ah 0000 0001
-	shlb $1, %al			#al 0001 1110
-	addb %ah, %al			#al 0001 1111
-	inc %edx
-	movb test2(,%edx,1), %ah	#ah 0000 0001
-	shlb $1, %al			#al 0011 1110
-	addb %ah, %al			#al 0011 1111
-	inc %edx
-	movb test2(,%edx,1), %ah	#ah 0000 0001
-	shlb $1, %al			#al 0111 1110
-	addb %ah, %al			#al 0111 1111
-	inc %edx
-	movb test2(,%edx,1), %ah	#ah 0000 0001
-	shlb $1, %al			#al 1111 1110
-	addb %ah, %al			#al 1111 1111
-
-	movl $1, %edx
-	movb %al, sklejenieT(,%edx,1)
-	
-eksp6:
-	movl $0, %edi
-	movb test(, %edi, 8), %al
-	/*
-	info registers al 	0x1
-	info registers rax	0x1
-	*/
-eksp7:
-	movl $0, %edi
-	movq test(, %edi, 8), %rax
-	/*
-	info registers al 	0x1
-	info registers rax	0x1000010010100
-	*/
-eksp8:
-	movb $0xaa, %al
-	/*
-	info registers al 	0xaa
-	info registers rax	0x10001000100aa
-	*/
-eksp9:
-	movb $10101010, %al
-	/*
-	$10101010 zamienia się na $0x12
-	info registers al 	0x12
-	info registers rax	0x1000100010012
-	*/
-
-	/*
-	Czy po eksp2 w test jest aa?
-	Czy eksp3 i eksp4 daja to samo? nope
-	Czy eksp5 i eksp6 daja to samo? nope
-	*/
-	nop
-	nop
-	nop
-
-	/*Wypisanie calosci*/
-	movq $1, %rax
-	movq $1, %rdi
-	movq %r15, %rsi 
-	movq $2, %rdx
-	syscall
-
-	movq $1, %rax
-	movq $1, %rdi
-	movq $tekst, %rsi
-	movq $tekst_len, %rdx
-	syscall
-
-	jmp dodanie
-
-dodanie:
-	movq $textout, %rax
-	movq $textout, %rbx
-	addq %rax, %rbx
+	subl $8, %r13d
+	cmp %r13d, %r14d
+	jl dalsze_sklejanie
 	jmp koniec
+
+dalsze_sklejanie:
+	inc %esi
+	jmp sklejanie
 	
 koniec:
+	movb $0xa4, %al
+	movb $0x10, %ah
+	nop	
+	nop
 	mov $SYSEXIT, %eax
 	mov $EXIT_SUCCESS, %ebx
 	int $0x80
