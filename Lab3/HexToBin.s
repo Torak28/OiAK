@@ -23,8 +23,6 @@ tekst: .ascii "\n"
 tekst_len = .-tekst
 calosc: .ascii "Caly bufor znakow: "
 calosc_len = .-calosc
-calosc2: .ascii "Dodanie: "
-calosc2_len = .-calosc
 
 .globl _start
 
@@ -261,6 +259,7 @@ sklejanie:
 	je dalej
 	movb %al, sklejenie(,%esi,1) 	
 	inc %r15d
+	jmp dalsze_sklejanie
 
 dalej:
 	subl $16, %r13d
@@ -310,18 +309,24 @@ dodawanie:
 	jmp bez_przeniesienia
 
 przeniesienie:
+	movl $0, %esi
+	movq $1, %rcx
+	movq %rcx, wynik(,%esi,1)
+	inc %esi
+	movq %rbx, wynik(,%esi,1)
 	jmp koniec
 
 bez_przeniesienia:
 	movl $0, %esi
+	movq $0, %rcx
+	movq %rcx, wynik(,%esi,1)
+	inc %esi
 	movq %rbx, wynik(,%esi,1)
 	jmp koniec
 
 koniec:	
+	/*wynik to konkatenacja wyniku[0] i wyniku[1]. Pierwsza część przechowuje informacje o 
+	  przemieszczeniu a druga jest resztą*/
 	mov $SYSEXIT, %eax
 	mov $EXIT_SUCCESS, %ebx
 	int $0x80
-
-/*a4c0000000000000
-  a4c0000000
-  */
