@@ -57,7 +57,6 @@ _start:
 	movl $0, %esi
 	movl $0, %r10d
 	movl $4, %r12d
-	movl $0, %r13d
 	/*PODUMOWANIE
 	  r11d - dlugosc poprawnie wpisanych znakow
 	  r9d - maksymalna dlugosc wejscia, bedzie zmiejszana przy wylawianiu poszczegolnych liczb
@@ -261,50 +260,25 @@ sklejanie:
 	je dalej
 	movb %al, sklejenie(,%esi,1) 	
 	inc %r15d
+	inc %r15d
 
 dalej:
-	subl $16, %r13d
+	subl $8, %r13d
 	cmp %r13d, %r14d
 	jl dalsze_sklejanie
-	jmp pre_wczytanie
+	jmp dodawanie
 
 dalsze_sklejanie:
 	dec %esi
 	jmp sklejanie
-
-pre_wczytanie:
-	/*
-	edi jako licznik wstecz
-	r15d jako ilosc dobrych par
-	r14d jako licznik
-	*/
-	movl $0, %edi
-	movl $16, %r14d
-	jmp wczytanie
-
-wczytanie:
-	movq sklejenie(, %edi, 8), %rax
-	/*w r8 jest ilosc znakow binarki
-	  jak podzele to przez 4 to dostane liczbe znakow wpisanych
-	  Potem muszą ja zostawić jak jest parzysta lub zwiększyć o jeden jak nie jest*/
-	movq %r9, %r15
-	inc %r15
-	jmp zera
-
-zera:
-	cmp %r15, %r14
-	jg usuwanie_zer
-	jmp dodawanie
-	
-usuwanie_zer:
-	shrq $4, %rax
-	inc %r15
-	jmp zera
-	
 	
 dodawanie:
 	movl $0, %edi
-	movq %rax, %rbx
+	movq sklejenie(, %edi, 8), %rbx
+	movq sklejenie(, %edi, 8), %rax
+	/*Usuwanie 0*/
+	shr $12, %rax
+	shr $12, %rbx
 	addq %rax, %rbx
 	jc przeniesienie
 	jmp bez_przeniesienia
@@ -321,7 +295,3 @@ koniec:
 	mov $SYSEXIT, %eax
 	mov $EXIT_SUCCESS, %ebx
 	int $0x80
-
-/*a4c0000000000000
-  a4c0000000
-  */
