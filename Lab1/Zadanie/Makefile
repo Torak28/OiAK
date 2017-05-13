@@ -13,7 +13,7 @@ Input64.o: Input64.s
 Input32: Input32.o
 	ld -o Input32 Input32.o
 Input32.o: Input32.s
-	as -o Input32.o Input32.s
+	as -o Input32.o -gstabs Input32.s
 BigToSmall64: BigToSmall64.o
 	ld -o BigToSmall64 BigToSmall64.o
 BigToSmall64.o: BigToSmall64.s
@@ -30,3 +30,15 @@ Reverse64: Reverse64.o
 	ld -o Reverse64 Reverse64.o
 Reverse64.o: Reverse64.s
 	as -o Reverse64.o Reverse64.s
+clean:
+	rm -f HelloWorld64 HelloWorld64.o
+	rm -f HelloWorld32 HelloWorld32.o
+	rm -f Input64 Input64.o
+	rm -f Input32 Input32.o
+	rm -f BigToSmall64 BigToSmall64.o
+	rm -f BigToSmall32 BigToSmall32.o
+	rm -f Reverse32 Reverse32.o
+	rm -f Reverse64 Reverse64.o
+
+
+

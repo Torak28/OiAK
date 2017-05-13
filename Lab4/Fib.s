@@ -1,10 +1,13 @@
 .data
-STDOUT = 1
-SYSWRITE = 4
 SYSEXIT = 1
 EXIT_SUCCESS = 0
 
+N_INDEX = 10
+
 .bss
+.comm textin, 512
+.comm textout,512
+.comm wejscie, 512
 .comm pierwsza, 1024
 .comm druga, 1024
 .comm wynik, 1024
@@ -17,7 +20,10 @@ _start:
 	r11d - liczba n
 	r10d - aktualne n
 	*/
-	movl $12, %r11d
+	movl $N_INDEX, %r11d
+	dec %r11d
+	movq $0, %rax
+	movq $0, %rbx
 	movl $0, %r10d
 	movl $0, %esi
 	movl $0, %edi
@@ -41,17 +47,17 @@ ciag_fib:
 	movq %r15, %r14
 	movq $0, %r15
 	cmp %rax, %rbx
-	jle druga_wieksza
-	jmp pierwsza_wieksza
+	jle pierwsza_wieksza
+	jmp druga_wieksza
 
 druga_wieksza:
 	movq %rbx, wynik(,%edi,1)
-	inc %edi
+	#inc %edi
 	jmp ciag_fib_dalej
 
 pierwsza_wieksza:
 	movq %rax, wynik(,%edi,1)
-	inc %edi
+	#inc %edi
 	jmp ciag_fib_dalej
 
 ciag_fib_dalej:
