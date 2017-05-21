@@ -4,7 +4,7 @@ SYSWRITE = 1
 SYSEXIT = 1
 EXIT_SUCCESS = 0
 BUFF = 16
-N_INDEX = 2
+N_INDEX = 5
 #N_INDEX = 1 to zwykłe dodawanie i to działa super
 #48 dziala
 
@@ -37,8 +37,7 @@ _start:
 	movq $0, %rax
 	movq $0, %rbx
 	movl $0, %r10d
-	movq $132, %r12
-	movq $132, %r8
+	movq $16, %r12
 	movq $0, %rdx
 	jmp ladowanie
 
@@ -61,25 +60,30 @@ ladowanie2:
 	lea druga, %r14
 	addq %r12, %r13
 	addq %r12, %r14
+
+	/*movq %r13, %r15
+	movq %r14, %r13
+	movq %r15, %r14
+	movq $0, %r15*/	
+
 	jmp ciag_fib
 
 ciag_fib:
 	/*Gubie drugą liczbę :c*/
+	/*Przy drugim są dobre wartości ale są odwrotnie*/
+	/*Przy trzecim wejsciu po next rbx ma poprzednią liczbę a nie ta którą potrzebuje*/
 	movq (%r13), %rax
 	movq (%r14), %rbx
 	adcq %rbx, %rax
 	movq %rax, (%r13)
-	movq %rax, (%r14)	
+	movq %rbx, (%r14)	
 	/*
 	Zamieniam r13 i r14 miejscami
 	*/
-	movq %r13, %r15
-	movq %r14, %r13
-	movq %r15, %r14
-	movq $0, %r15
 	cmp %rax, %rbx
 	jle pierwsza_wieksza
 	jmp druga_wieksza
+
 
 druga_wieksza:
 	movq %rbx, wynik(,%r12,1)
@@ -95,8 +99,8 @@ pierwsza_wieksza:
 ciag_fib_dalej:
 	cmp %rdx, %r12
 	jle next
-	/*zmiana 120*/
-	subq $16, %r12
+	/*16 przeskakuje za daleko, 8 nie pomaga :c*/
+	subq $8, %r12
 	jmp ladowanie2
 
 next:
