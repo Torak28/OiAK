@@ -1,8 +1,20 @@
 .data
+STDOUT = 1
+SYSWRITE = 1
 SYSEXIT = 1
 EXIT_SUCCESS = 0
+BUFF = 16
+N_INDEX = 2
+#N_INDEX = 1 to zwykłe dodawanie i to działa super
+#48 dziala
 
-N_INDEX = 10
+/*
+Dla N = 100 powinno być:
+100110011001111011011011101101010011111000101100101001011111111000011
+A jest:
+     0011001111011011011101101010011111000101100101001011111111000011
+Końcówka jest dobra ale ucina tył :c
+*/
 
 .bss
 .comm textin, 512
@@ -25,20 +37,39 @@ _start:
 	movq $0, %rax
 	movq $0, %rbx
 	movl $0, %r10d
-	movl $0, %esi
-	movl $0, %edi
-	movl $0, pierwsza(,%esi,1)
-	movl $1, druga(,%esi,1)	
+	movq $132, %r12
+	movq $132, %r8
+	movq $0, %rdx
+	jmp ladowanie
+
+ladowanie:
+	/*128 jako zmienna*/
+	movl %r12d, %esi
+	movl %r12d, %edi
+	movq $2, pierwsza(,%esi,1)
+	movq $5, druga(,%esi,1)	
 	lea pierwsza, %r13
 	lea druga, %r14
+	addq %r12, %r13
+	addq %r12, %r14
+	jmp ciag_fib
+
+ladowanie2:
+	movl %r12d, %esi
+	movl %r12d, %edi
+	lea pierwsza, %r13
+	lea druga, %r14
+	addq %r12, %r13
+	addq %r12, %r14
 	jmp ciag_fib
 
 ciag_fib:
+	/*Gubie drugą liczbę :c*/
 	movq (%r13), %rax
 	movq (%r14), %rbx
-	addq %rbx, %rax
+	adcq %rbx, %rax
 	movq %rax, (%r13)
-	movq %rbx, (%r14)
+	movq %rax, (%r14)	
 	/*
 	Zamieniam r13 i r14 miejscami
 	*/
@@ -51,21 +82,88 @@ ciag_fib:
 	jmp druga_wieksza
 
 druga_wieksza:
-	movq %rbx, wynik(,%edi,1)
+	movq %rbx, wynik(,%r12,1)
 	#inc %edi
 	jmp ciag_fib_dalej
 
 pierwsza_wieksza:
-	movq %rax, wynik(,%edi,1)
+	
+	movq %rax, wynik(,%r12,1)
 	#inc %edi
 	jmp ciag_fib_dalej
 
 ciag_fib_dalej:
+	cmp %rdx, %r12
+	jle next
+	/*zmiana 120*/
+	subq $16, %r12
+	jmp ladowanie2
+
+next:
+	movq $128, %r12
 	inc %r10d
 	cmp %r10d, %r11d
-	jle koniec
-	jmp ciag_fib
-			
+	jle wypisz
+	jmp ladowanie2
+		
+wypisz:
+	/*Bardzo łopatologicznie, lepiej by było z lea ale to się zrobi potem*/
+	movq $SYSWRITE, %rax
+	movq $STDOUT, %rdi
+	movq $wynik, %rsi
+	movq $BUFF, %rdx
+	syscall
+
+	movq $SYSWRITE, %rax
+	movq $STDOUT, %rdi
+	movq $wynik+16, %rsi
+	movq $BUFF, %rdx
+	syscall
+
+	movq $SYSWRITE, %rax
+	movq $STDOUT, %rdi
+	movq $wynik+32, %rsi
+	movq $BUFF, %rdx
+	syscall
+
+	movq $SYSWRITE, %rax
+	movq $STDOUT, %rdi
+	movq $wynik+48, %rsi
+	movq $BUFF, %rdx
+	syscall
+
+	movq $SYSWRITE, %rax
+	movq $STDOUT, %rdi
+	movq $wynik+64, %rsi
+	movq $BUFF, %rdx
+	syscall
+
+	movq $SYSWRITE, %rax
+	movq $STDOUT, %rdi
+	movq $wynik+80, %rsi
+	movq $BUFF, %rdx
+	syscall
+
+	movq $SYSWRITE, %rax
+	movq $STDOUT, %rdi
+	movq $wynik+88, %rsi
+	movq $BUFF, %rdx
+	syscall
+
+	movq $SYSWRITE, %rax
+	movq $STDOUT, %rdi
+	movq $wynik+104, %rsi
+	movq $BUFF, %rdx
+	syscall
+
+	movq $SYSWRITE, %rax
+	movq $STDOUT, %rdi
+	movq $wynik+120, %rsi
+	movq $BUFF, %rdx
+	syscall
+
+	jmp koniec
+	
 koniec:
 	mov $SYSEXIT, %eax
 	mov $EXIT_SUCCESS, %ebx	
