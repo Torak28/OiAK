@@ -42,6 +42,7 @@ _start:
 	jmp ladowanie
 
 ladowanie:
+	/*WROCIC DO E5*/
 	/*128 jako zmienna*/
 	/*zrobić cos z spprawdzaniem pparzystosci?*/
 	movl %r12d, %esi
