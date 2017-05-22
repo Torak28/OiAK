@@ -57,15 +57,33 @@ ladowanie:
 ladowanie2:
 	movl %r12d, %esi
 	movl %r12d, %edi
-	#lea pierwsza, %r13
-	#lea druga, %r14
+	lea pierwsza, %r13
+	lea druga, %r14
 	addq %r12, %r13
 	addq %r12, %r14
 
+	/*movq (%r13), %r8
+	movq (%r14), %r9
+	cmp %r9, %r8
+	/*to generuje przeniesienia!!! Jakoś się trzba pozbyc tego compera
+	jge zamiana
+	jmp niezamiana
+
+zamiana:
 	movq %r13, %r15
 	movq %r14, %r13
 	movq %r15, %r14
 	movq $0, %r15
+	jmp dalejdalej	
+
+niezamiana:
+	jmp dalejdalej
+
+dalejdalej:*/
+	/*movq %r13, %r15
+	movq %r14, %r13
+	movq %r15, %r14
+	movq $0, %r15*/
 
 	jmp ciag_fib
 
@@ -75,13 +93,12 @@ ciag_fib:
 	/*Przy trzecim wejsciu po next rbx ma poprzednią liczbę a nie ta którą potrzebuje*/
 	movq (%r13), %rax
 	movq (%r14), %rbx
-	addq %rbx, %rax
+	adcq %rbx, %rax
 	movq %rax, (%r13)
 	movq %rbx, (%r14)	
 	/*
 	Zamieniam r13 i r14 miejscami
 	*/
-
 	cmp %rax, %rbx
 	jle pierwsza_wieksza
 	jmp druga_wieksza

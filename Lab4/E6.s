@@ -4,7 +4,7 @@ SYSWRITE = 1
 SYSEXIT = 1
 EXIT_SUCCESS = 0
 BUFF = 16
-N_INDEX = 5
+N_INDEX = 100
 #N_INDEX = 1 to zwykłe dodawanie i to działa super
 #48 dziala
 
@@ -37,7 +37,7 @@ _start:
 	movq $0, %rax
 	movq $0, %rbx
 	movl $0, %r10d
-	movq $16, %r12
+	movq $128, %r12
 	movq $0, %rdx
 	jmp ladowanie
 
@@ -46,8 +46,8 @@ ladowanie:
 	/*zrobić cos z spprawdzaniem pparzystosci?*/
 	movl %r12d, %esi
 	movl %r12d, %edi
-	movq $2, pierwsza(,%esi,1)
-	movq $5, druga(,%esi,1)	
+	movq $0, pierwsza(,%esi,1)
+	movq $1, druga(,%esi,1)	
 	lea pierwsza, %r13
 	lea druga, %r14
 	addq %r12, %r13
@@ -57,15 +57,26 @@ ladowanie:
 ladowanie2:
 	movl %r12d, %esi
 	movl %r12d, %edi
-	#lea pierwsza, %r13
-	#lea druga, %r14
+	lea pierwsza, %r13
+	lea druga, %r14
 	addq %r12, %r13
 	addq %r12, %r14
 
+	movq (%r13), %r8
+	movq (%r14), %r9
+	cmp %r9, %r8
+	jg zamiana
+	jmp dalejdalej
+
+zamiana:
 	movq %r13, %r15
 	movq %r14, %r13
 	movq %r15, %r14
 	movq $0, %r15
+	jmp dalejdalej	
+
+dalejdalej:
+	clc
 
 	jmp ciag_fib
 
@@ -75,13 +86,12 @@ ciag_fib:
 	/*Przy trzecim wejsciu po next rbx ma poprzednią liczbę a nie ta którą potrzebuje*/
 	movq (%r13), %rax
 	movq (%r14), %rbx
-	addq %rbx, %rax
+	adcq %rbx, %rax
 	movq %rax, (%r13)
 	movq %rbx, (%r14)	
 	/*
 	Zamieniam r13 i r14 miejscami
 	*/
-
 	cmp %rax, %rbx
 	jle pierwsza_wieksza
 	jmp druga_wieksza
@@ -106,8 +116,7 @@ ciag_fib_dalej:
 	jmp ladowanie2
 
 next:
-	movq $16, %r12
-	clc
+	movq $128, %r12
 	inc %r10d
 	cmp %r10d, %r11d
 	jle wypisz

@@ -38,3 +38,38 @@ r14            0x6002b0	6292144
 
 r13 pierwsza
 r14 druga
+
+
+Adresy sa już dobrze
+
+1:
+(gdb) i r rax
+rax            0x2	2
+(gdb) i r rbx
+rbx            0x5	5
+
+2:
+(gdb) i r rax
+rax            0x5	5
+(gdb) i r rbx
+rbx            0x7	7
+
+3:
+(gdb) i r rax
+rax            0x7	7
+(gdb) i r rbx
+rbx            0xc	12
+
+
+4:
+(gdb) i r rax
+rax            0xc	12
+(gdb) i r rbx
+rbx            0x14	20
+POWSTAŁO PRZENIESIENIE GDZIEŚ!
+
+
+
+
+
+W E6 OPRÓCZ PRZENIESIENIA WSZYSTKO BANGLA - POZBYĆ SIĘ PRZENIESIENIA
