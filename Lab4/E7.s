@@ -193,3 +193,4 @@ koniec:
 	mov $EXIT_SUCCESS, %ebx	
 	int $0x80
 
+

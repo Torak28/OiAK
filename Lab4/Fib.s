@@ -4,16 +4,12 @@ SYSWRITE = 1
 SYSEXIT = 1
 EXIT_SUCCESS = 0
 BUFF = 16
-N_INDEX = 5
-#N_INDEX = 1 to zwykłe dodawanie i to działa super
-#48 dziala
+N_INDEX = 200
+# 92 bangla
+# dla 93 juz nie :c
 
 /*
-Dla N = 100 powinno być:
-100110011001111011011011101101010011111000101100101001011111111000011
-A jest:
-     0011001111011011011101101010011111000101100101001011111111000011
-Końcówka jest dobra ale ucina tył :c
+E9 jako zawór bezpieczeństwa dla tego Naszego projektu!
 */
 
 .bss
@@ -25,95 +21,96 @@ Końcówka jest dobra ale ucina tył :c
 .comm wynik, 1024
 
 .text
-
 .globl _start
 _start:
 	/*
 	r11d - liczba n
 	r10d - aktualne n
 	*/
+	pushf
 	movl $N_INDEX, %r11d
 	dec %r11d
 	movq $0, %rax
 	movq $0, %rbx
 	movl $0, %r10d
-	movq $16, %r12
-	movq $0, %rdx
-	jmp ladowanie
-
-ladowanie:
-	/*WROCIC DO E5*/
-	/*128 jako zmienna*/
-	/*zrobić cos z spprawdzaniem pparzystosci?*/
-	movl %r12d, %esi
-	movl %r12d, %edi
-	movq $2, pierwsza(,%esi,1)
-	movq $5, druga(,%esi,1)	
+	movq $128, %r12
+	movq $0, %r8
+	movq $17, %r9
+	movq $8, %rdx
+	movl $0, pierwsza(,%r12,1)
+	movl $1, druga(,%r12,1)
 	lea pierwsza, %r13
 	lea druga, %r14
 	addq %r12, %r13
 	addq %r12, %r14
-	jmp ciag_fib
-
-ladowanie2:
 	movl %r12d, %esi
 	movl %r12d, %edi
-	#lea pierwsza, %r13
-	#lea druga, %r14
-	addq %r12, %r13
-	addq %r12, %r14
+	jmp ciag_fib
 
-	movq %r13, %r15
-	movq %r14, %r13
-	movq %r15, %r14
-	movq $0, %r15
-
+ladowanie:
+	movl %r12d, %esi
+	movl %r12d, %edi
+	subq %rdx, %r13
+	subq %rdx, %r14
 	jmp ciag_fib
 
 ciag_fib:
-	/*Gubie drugą liczbę :c*/
-	/*Przy drugim są dobre wartości ale są odwrotnie*/
-	/*Przy trzecim wejsciu po next rbx ma poprzednią liczbę a nie ta którą potrzebuje*/
 	movq (%r13), %rax
 	movq (%r14), %rbx
-	addq %rbx, %rax
+	jmp ciag_fib2
+
+ciag_fib2:
+	popf
+	adcq %rbx, %rax
+	pushf
 	movq %rax, (%r13)
 	movq %rbx, (%r14)	
 	/*
 	Zamieniam r13 i r14 miejscami
 	*/
-
 	cmp %rax, %rbx
 	jle pierwsza_wieksza
 	jmp druga_wieksza
 
-
 druga_wieksza:
-	movq %rbx, wynik(,%r12,1)
-	#inc %edi
+	movq %rbx, wynik(,%edi,1)
 	jmp ciag_fib_dalej
 
 pierwsza_wieksza:
 	
-	movq %rax, wynik(,%r12,1)
-	#inc %edi
+	movq %rax, wynik(,%edi,1)
 	jmp ciag_fib_dalej
 
 ciag_fib_dalej:
-	cmp %rdx, %r12
-	jle next
-	/*16 przeskakuje za daleko, 8 nie pomaga :c*/
+	inc %r8
 	subq $8, %r12
-	jmp ladowanie2
+	cmp %r8, %r9
+	je nastepna
+	jmp ladowanie
 
-next:
-	movq $16, %r12
-	clc
+nastepna:
+	movq $0, %r8
+	movq $128, %r12
 	inc %r10d
+	movq %r13, %r15
+	movq %r14, %r13
+	movq %r15, %r14
+	movq $0, %r15
 	cmp %r10d, %r11d
-	jle wypisz
-	jmp ladowanie2
-		
+	jle wypisz	
+	jmp dalej
+
+dalej:
+	addq %r12, %r13
+	addq %r12, %r14
+	movl %r12d, %esi
+	movl %r12d, %edi
+	jmp ciag_fib
+	
+	
+
+
+
 wypisz:
 	/*Bardzo łopatologicznie, lepiej by było z lea ale to się zrobi potem*/
 	movq $SYSWRITE, %rax
@@ -167,6 +164,12 @@ wypisz:
 	movq $SYSWRITE, %rax
 	movq $STDOUT, %rdi
 	movq $wynik+120, %rsi
+	movq $BUFF, %rdx
+	syscall
+
+	movq $SYSWRITE, %rax
+	movq $STDOUT, %rdi
+	movq $wynik+136, %rsi
 	movq $BUFF, %rdx
 	syscall
 

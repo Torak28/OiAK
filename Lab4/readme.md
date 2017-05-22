@@ -1,75 +1,94 @@
 # make Fib, by sie udalo
 
-
-Jak na razie wyliczam element ciągu fiabanaciego o podanym w kodzie indexie i trzymam go w buforze.
-Całość działa na zasadzie arytmetyki adresów i opiera się o prostą zamiane adresów dwóch buforów.
-
-Problem jest taki że całą odpowiedź przetrzymuje pod konkretnym adresem w pamięci w jednej 64-bitowej komórce przez co moge zapisać tam tylko do 47 wyrazu ciągu fibanaciego, potem przekręca się INT
-
-Do tego za nic na świecie nie wiem jak się zabrać z BigEndianem do tego. W sensie że jak.
-
-Pomysł jest taki żeby nie zapisywać np."55" jako "55" tylko jako "0x37". Ale to też wiąże mnie limitem jak się chociażby przekonałem przy ostatnim programie. Chociaż... w sumie to nie jestem do końca pewien. W sensie pewien jestem że do hexdumpa potrzebuje wypisywania na ekran, a do tego potrzebuje przeniesienia bufora do rejestru. I tu się zaczyna zabawa bo resjetr ma maks 64 bity.
-
-Można też rozdzielić całą liczbe na poszczególne komórki, tak żeby miało to BigEndianowy sens ale to wymagałoby żebym w jakiś sposób znał długośc liczby po dodaniu dwóch. Nie jestem pewien czy to jest jakoś możliwe. Może jakoś biotowo to rozegrać? Przekształcać na binarkę i potem jakoś w zależności od tego... :C
-
 x/tb &wynik
 ./Fib | hexdump -c wynik w LE
 
+Problemy:
+[x]Złe adresy w r13 i r14
 
+Rozw: Dodanie dwóch liczb i sprawdzenie wyniku
 
-00000080  82 3f a5 43 00 00 00 00  00 00 00 00 00 00 00 00  |.?.C............|
+[x]Sekwencja kroku [bez zamiany lipa]
+[x]Kolejnosc liczb
 
+Rozw: Dodanie trzech liczb i sprawdzenie wyniku
 
+[x]Problem przeniesień
 
-Pierwsze wczytanie:
-(gdb) x/24bt &druga
-0x6002a0 <druga>:	00000000	00000000	00000000	00000000	00000000	00000000	00000000	00000000
-0x6002a8 <druga+8>:	00000000	00000000	00000000	00000000	00000000	00000000	00000000	00000000
-0x6002b0 <druga+16>:	00000101	00000000	00000000	00000000	00000000	00000000	00000000	00000000
-(gdb) x/24bt &pierwsza
-0x600ca0 <pierwsza>:	00000000	00000000	00000000	00000000	00000000	00000000	00000000	00000000
-0x600ca8 <pierwsza+8>:	00000000	00000000	00000000	00000000	00000000	00000000	00000000	00000000
-0x600cb0 <pierwsza+16>:	00000010	00000000	00000000	00000000	00000000	00000000	00000000	00000000
+Rozw: Puszowanie flagi przeniesienia na stos
 
-(gdb) i r r13
-r13            0x600cb0	6294704
-(gdb) i r r14
-r14            0x6002b0	6292144
-
-r13 pierwsza
-r14 druga
-
-
-Adresy sa już dobrze
-
-1:
-(gdb) i r rax
-rax            0x2	2
-(gdb) i r rbx
-rbx            0x5	5
-
-2:
-(gdb) i r rax
-rax            0x5	5
-(gdb) i r rbx
-rbx            0x7	7
-
-3:
-(gdb) i r rax
-rax            0x7	7
-(gdb) i r rbx
-rbx            0xc	12
-
-
-4:
-(gdb) i r rax
-rax            0xc	12
-(gdb) i r rbx
-rbx            0x14	20
-POWSTAŁO PRZENIESIENIE GDZIEŚ!
+(gdb) x/132bt &wynik
+0x600a30 <wynik>:	00000111	00001110	e
+0x600a38 <wynik+8>:	00000110	00001100	c
+0x600a40 <wynik+16>:	00000101	00001010	a
+0x600a48 <wynik+24>:	00000100	00001000	8
+0x600a50 <wynik+32>:	00000011	00000110	6
+0x600a58 <wynik+40>:	00000010	00000100	4
+0x600a60 <wynik+48>:	00000001	00000010	2
+0x600a68 <wynik+56>:	00001001	00010010	12
+0x600a70 <wynik+64>:	00001000	00010000	10
+0x600a78 <wynik+72>:	00000111	00001110	e
+0x600a80 <wynik+80>:	00000110	00001100	c
+0x600a88 <wynik+88>:	00000101	00001010	a
+0x600a90 <wynik+96>:	00000100	00001000	8
+0x600a98 <wynik+104>:	00000011	00000110	6
+0x600aa0 <wynik+112>:	00000010	00000100	4
+0x600aa8 <wynik+120>:	00000010	00000011	3
+0x600ab0 <wynik+128>:	00000000	00000000	0
+EDIT: Dla tych danych dziala
 
 
 
+Nadal dla 100 jest kicha :c
+Problem bo w pewnym momencie przy zamianie dla prlnego rax(tj. dla 0xffffff...) on staje sie rowny -1
+
+[x]Pozbyc sie zamiany
+
+[x]Dla 100:
+354224848179261915075
+[13 33db 76a7 c594 bfc3]
+
+0000080 [0013] 0000 0000 0000 [bfc3 c594 76a7 33db]
+
+[x]Dla 150:
+9969216677189303386214405760200
+[7d d446 c1f9 5e43 f356 255b e4c8]
+
+0000080 [c1f9 d446 007d] 0000 [e4c8 255b f356 5e43]
+
+Dla 200:
+280571172992510140037611932413038677189525
+[338] 864a 5c1c aeb0 7d0e f067 cb83 df17 e395
+
+0000070 0000 0000 0000 0000 [0338] 0000 0000 0000
+0000080 f156 a9c5 cbbf 958e 728d 123b ab30 433d
+0000090 0000 0000 0000 0000 0000 0000 0000 0000
 
 
-W E6 OPRÓCZ PRZENIESIENIA WSZYSTKO BANGLA - POZBYĆ SIĘ PRZENIESIENIA
+Dla 250:
+7896325826131730509282738943634332893686268675876375
+151a e2a8 207e f442 5d98 671d e203 bfb8 94e8 f601 e617
+
+0000070 0000 0000 0000 0000 207e e2a8 151a 0000
+0000080 c62a e660 af03 1354 0fa2 4488 2369 0608
+0000090 0000 0000 0000 0000 0000 0000 0000 0000
+
+Dla 300:
+222232244629420445529739893461909967206666939096499764990979600
+[8a4b] a39e 1a17 4149 7bbb ef46 0a25 486e e575 [f510 e921 b33e 2e10]
+
+0000070 [8a4b] 0000 0000 0000 7386 aff1 b0d4 a6fd
+0000080 52fc b317 2cc2 0baf [2e10 b33e e921 f510]
+
+
+Jest poczatek i koniec ale nie ma srodka :c
+
+
+
+[]BE
+
+Rozqw: cokolwiek
+
+
+
+
