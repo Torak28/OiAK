@@ -5,8 +5,7 @@ SYSEXIT = 1
 EXIT_SUCCESS = 0
 BUFF = 16
 N_INDEX = 200
-# 92 bangla
-# dla 93 juz nie :c
+# 165
 
 /*
 E9 jako zawór bezpieczeństwa dla tego Naszego projektu!
@@ -68,16 +67,9 @@ ciag_fib2:
 	/*
 	Zamieniam r13 i r14 miejscami
 	*/
-	cmp %rax, %rbx
-	jle pierwsza_wieksza
-	jmp druga_wieksza
+	jmp zapisz_wynik
 
-druga_wieksza:
-	movq %rbx, wynik(,%edi,1)
-	jmp ciag_fib_dalej
-
-pierwsza_wieksza:
-	
+zapisz_wynik:
 	movq %rax, wynik(,%edi,1)
 	jmp ciag_fib_dalej
 
