@@ -5,19 +5,13 @@ SYSEXIT = 1
 EXIT_SUCCESS = 0
 BUFF = 16
 N_INDEX = 200
-# 165
-
-/*
-E9 jako zawór bezpieczeństwa dla tego Naszego projektu!
-*/
 
 .bss
-.comm textin, 512
-.comm textout,512
-.comm wejscie, 512
 .comm pierwsza, 1024
 .comm druga, 1024
 .comm wynik, 1024
+.comm BE, 1024
+.comm preBE, 64
 
 .text
 .globl _start
@@ -32,9 +26,10 @@ _start:
 	movq $0, %rax
 	movq $0, %rbx
 	movl $0, %r10d
-	movq $128, %r12
+	movq $1016, %r12
+	movq $0, %rcx
 	movq $0, %r8
-	movq $17, %r9
+	movq $128, %r9
 	movq $8, %rdx
 	movl $0, pierwsza(,%r12,1)
 	movl $1, druga(,%r12,1)
@@ -71,6 +66,52 @@ ciag_fib2:
 
 zapisz_wynik:
 	movq %rax, wynik(,%edi,1)
+	jmp zapisz_BE
+
+zapisz_BE:	
+	movq $0, %rcx
+	
+	movb %al, %cl	#00000000 00000000 00000000 00000000 00000000 00000000 00000000 XXXXXXXX
+	shlq $56, %rcx	#XXXXXXXX 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+	shrq $8, %rax
+	movb %al, %bl	#00000000 00000000 00000000 00000000 00000000 00000000 00000000 YYYYYYYY
+	shlq $56, %rbx	#YYYYYYYY 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+	shrq $8, %rbx	#00000000 YYYYYYYY 00000000 00000000 00000000 00000000 00000000 00000000
+	addq %rbx, %rcx #XXXXXXXX YYYYYYYY 00000000 00000000 00000000 00000000 00000000 00000000
+	shrq $8, %rax
+	movb %al, %bl	#00000000 00000000 00000000 00000000 00000000 00000000 00000000 ZZZZZZZZ
+	shlq $56, %rbx	#ZZZZZZZZ 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+	shrq $16, %rbx	#00000000 00000000 ZZZZZZZZ 00000000 00000000 00000000 00000000 00000000
+	addq %rbx, %rcx #XXXXXXXX YYYYYYYY ZZZZZZZZ 00000000 00000000 00000000 00000000 00000000
+	shrq $8, %rax
+	movb %al, %bl	#00000000 00000000 00000000 00000000 00000000 00000000 00000000 CCCCCCCC
+	shlq $56, %rbx	#CCCCCCCC 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+	shrq $24, %rbx	#00000000 00000000 00000000 CCCCCCCC 00000000 00000000 00000000 00000000
+	addq %rbx, %rcx #XXXXXXXX YYYYYYYY ZZZZZZZZ CCCCCCCC 00000000 00000000 00000000 00000000
+	shrq $8, %rax
+	movb %al, %bl	#00000000 00000000 00000000 00000000 00000000 00000000 00000000 VVVVVVVV
+	shlq $56, %rbx	#VVVVVVVV 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+	shrq $32, %rbx	#00000000 00000000 00000000 00000000 VVVVVVVV 00000000 00000000 00000000
+	addq %rbx, %rcx #XXXXXXXX YYYYYYYY ZZZZZZZZ CCCCCCCC VVVVVVVV 00000000 00000000 00000000
+	shrq $8, %rax
+	movb %al, %bl	#00000000 00000000 00000000 00000000 00000000 00000000 00000000 BBBBBBBB
+	shlq $56, %rbx	#BBBBBBBB 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+	shrq $40, %rbx	#00000000 00000000 00000000 00000000 00000000 BBBBBBBB 00000000 00000000
+	addq %rbx, %rcx #XXXXXXXX YYYYYYYY ZZZZZZZZ CCCCCCCC VVVVVVVV BBBBBBBB 00000000 00000000
+	shrq $8, %rax
+	movb %al, %bl	#00000000 00000000 00000000 00000000 00000000 00000000 00000000 NNNNNNNN
+	shlq $56, %rbx	#NNNNNNNN 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+	shrq $48, %rbx	#00000000 00000000 00000000 00000000 00000000 00000000 NNNNNNNN 00000000
+	addq %rbx, %rcx #XXXXXXXX YYYYYYYY ZZZZZZZZ CCCCCCCC VVVVVVVV BBBBBBBB NNNNNNNN 00000000
+	shrq $8, %rax
+	movb %al, %bl	#00000000 00000000 00000000 00000000 00000000 00000000 00000000 MMMMMMMM
+	shlq $56, %rbx	#MMMMMMMM 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+	shrq $56, %rbx	#00000000 00000000 00000000 00000000 00000000 00000000 00000000 MMMMMMMM
+	addq %rbx, %rcx #XXXXXXXX YYYYYYYY ZZZZZZZZ CCCCCCCC VVVVVVVV BBBBBBBB NNNNNNNN MMMMMMMM
+	
+	movq $0, %rbx
+	movq %rcx, %rbx	
+	movq %rbx, BE(,%edi,1)
 	jmp ciag_fib_dalej
 
 ciag_fib_dalej:
@@ -82,7 +123,7 @@ ciag_fib_dalej:
 
 nastepna:
 	movq $0, %r8
-	movq $128, %r12
+	movq $1016, %r12
 	inc %r10d
 	movq %r13, %r15
 	movq %r14, %r13
@@ -99,74 +140,44 @@ dalej:
 	movl %r12d, %edi
 	jmp ciag_fib
 	
-	
-
-
-
 wypisz:
-	/*Bardzo łopatologicznie, lepiej by było z lea ale to się zrobi potem*/
+	lea wynik, %r12
+	movq $0, %r13
+	movq $63, %r14
+	jmp petla_wypisujaca
+
+petla_wypisujaca:
 	movq $SYSWRITE, %rax
 	movq $STDOUT, %rdi
-	movq $wynik, %rsi
+	movq %r12, %rsi
 	movq $BUFF, %rdx
 	syscall
-
-	movq $SYSWRITE, %rax
-	movq $STDOUT, %rdi
-	movq $wynik+16, %rsi
-	movq $BUFF, %rdx
-	syscall
-
-	movq $SYSWRITE, %rax
-	movq $STDOUT, %rdi
-	movq $wynik+32, %rsi
-	movq $BUFF, %rdx
-	syscall
-
-	movq $SYSWRITE, %rax
-	movq $STDOUT, %rdi
-	movq $wynik+48, %rsi
-	movq $BUFF, %rdx
-	syscall
-
-	movq $SYSWRITE, %rax
-	movq $STDOUT, %rdi
-	movq $wynik+64, %rsi
-	movq $BUFF, %rdx
-	syscall
-
-	movq $SYSWRITE, %rax
-	movq $STDOUT, %rdi
-	movq $wynik+80, %rsi
-	movq $BUFF, %rdx
-	syscall
-
-	movq $SYSWRITE, %rax
-	movq $STDOUT, %rdi
-	movq $wynik+88, %rsi
-	movq $BUFF, %rdx
-	syscall
-
-	movq $SYSWRITE, %rax
-	movq $STDOUT, %rdi
-	movq $wynik+104, %rsi
-	movq $BUFF, %rdx
-	syscall
-
-	movq $SYSWRITE, %rax
-	movq $STDOUT, %rdi
-	movq $wynik+120, %rsi
-	movq $BUFF, %rdx
-	syscall
-
-	movq $SYSWRITE, %rax
-	movq $STDOUT, %rdi
-	movq $wynik+136, %rsi
-	movq $BUFF, %rdx
-	syscall
-
-	jmp koniec
 	
+	inc %r13
+	addq $16, %r12
+	cmp %r13, %r14
+	jge petla_wypisujaca
+	jmp wypiszBE
+	
+wypiszBE:
+	lea BE, %r12
+	movq $0, %r13
+	movq $63, %r14
+	jmp petla_wypisujacaBE
+
+petla_wypisujacaBE:
+	movq $SYSWRITE, %rax
+	movq $STDOUT, %rdi
+	movq %r12, %rsi
+	movq $BUFF, %rdx
+	syscall
+	
+	inc %r13
+	addq $16, %r12
+	cmp %r13, %r14
+	jge petla_wypisujacaBE
+	jmp koniec
+
 koniec:
 	mov $SYSEXIT, %eax
 	mov $EXIT_SUCCESS, %ebx	

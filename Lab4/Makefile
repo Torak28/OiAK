@@ -38,3 +38,14 @@ Debug:
 	./Fib
 	./Fib | hexdump
 	gdb ./Fib
+Stat:
+	./Fib
+	./Fib | hexdump
+	./Fib > out.txt
+	ls -l out.txt
+Hex:
+	./Fib
+	./Fib | hexdump -C
+BE:
+	make Fib
+	make Debug

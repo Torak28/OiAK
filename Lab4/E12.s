@@ -4,7 +4,7 @@ SYSWRITE = 1
 SYSEXIT = 1
 EXIT_SUCCESS = 0
 BUFF = 16
-N_INDEX = 300
+N_INDEX = 200
 # 165
 
 /*
@@ -66,23 +66,10 @@ ciag_fib2:
 	movq %rbx, (%r14)	
 	/*
 	Zamieniam r13 i r14 miejscami
-	Było:
-	cmp %rax, %rbx
-	jle pierwsza_wieksza
-	Nie dziala:
-	cmp %rax, %rbx
-	jle pierwsza_wieksza
-	Chyba:
-	jmp pierwsza_wieksza
 	*/
-	jmp pierwsza_wieksza
+	jmp zapisz_wynik
 
-druga_wieksza:
-	movq %rbx, wynik(,%edi,1)
-	jmp ciag_fib_dalej
-
-pierwsza_wieksza:
-	
+zapisz_wynik:
 	movq %rax, wynik(,%edi,1)
 	jmp ciag_fib_dalej
 
