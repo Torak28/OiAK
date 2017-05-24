@@ -28,7 +28,7 @@ main:
 	mov $0, %rax    	 	 # Przesyłamy 0 parametrów zmiennoprzecinkowych
  	mov liczba1(, %rcx, 4), %rdi  	 # Pierwszy parametr - typu całkowitego
 	mov liczba2(, %rcx, 4), %rsi 	 # Drugi parametr - typu całkowitego
- 	call funkcja     	 	 # Wywołanie funkcjinie funkcji
+ 	call funkcja     	 	 # Wywołanie funkcjinie funkcji, wynik jest w rax
 
 	mov %rax, %rsi
 	mov $0, %rax        # Przesyłamy 0 parametrów zmiennoprzecinkowych
