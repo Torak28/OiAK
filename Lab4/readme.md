@@ -8,16 +8,16 @@ x/tb &wynik
 
 Problemy:
 
-[x] Złe adresy w r13 i r14
+ - [x] Złe adresy w r13 i r14
 
 **Rozw:** Dodanie dwóch liczb i sprawdzenie wyniku
 
-[x] Sekwencja kroku
-[x] Kolejnosc liczb
+ - [x] Sekwencja kroku
+ - [x] Kolejnosc liczb
 
 **Rozw:** Dodanie trzech liczb i sprawdzenie wyniku
 
-[x] Problem przeniesień
+ - [x] Problem przeniesień
 
 **Rozw:** Puszowanie flagi przeniesienia na stos
 
@@ -47,9 +47,9 @@ EDIT: Dla tych danych dziala
 Nadal dla 100 jest kicha :c
 Problem bo w pewnym momencie przy zamianie dla prlnego rax(tj. dla 0xffffff...) on staje sie rowny -1
 
-[x] Pozbyc sie zamiany
+ - [x] Pozbyc sie zamiany
 
-[x] Dla 100:
+ - [x] Dla 100:
 
 ```
 354224848179261915075
@@ -57,14 +57,14 @@ Problem bo w pewnym momencie przy zamianie dla prlnego rax(tj. dla 0xffffff...) 
 
 0000080 [0013] 0000 0000 0000 [bfc3 c594 76a7 33db]
 
-[x]Dla 150:
+ - [x]Dla 150:
 9969216677189303386214405760200
 [7d d446 c1f9 5e43 f356 255b e4c8]
 
 0000080 [c1f9 d446 007d] 0000 [e4c8 255b f356 5e43]
 ```
 
-[x] Dla 160:
+ - [x] Dla 160:
 
 ```
 1226132595394188293000174702095995
@@ -74,7 +74,7 @@ Problem bo w pewnym momencie przy zamianie dla prlnego rax(tj. dla 0xffffff...) 
 0000090 0000 0000 0000 0000 0000 0000 0000 0000
 ```
 
-[x] Dla 165:
+ - [x] Dla 165:
 
 ```
 13598018856492162040239554477268290
@@ -84,7 +84,7 @@ Problem bo w pewnym momencie przy zamianie dla prlnego rax(tj. dla 0xffffff...) 
 0000090 0000 0000 0000 0000 0000 0000 0000 0000
 ```
 
-[x] Dla 170:
+ - [x] Dla 170:
 
 ```
 150804340016807970735635273952047185
@@ -94,7 +94,7 @@ Problem bo w pewnym momencie przy zamianie dla prlnego rax(tj. dla 0xffffff...) 
 0000090 0000 0000 0000 0000 0000 0000 0000 0000
 ```
 
-[x] Dla 175:
+ - [x] Dla 175:
 
 ```
 1672445759041379840132227567949787325
@@ -104,7 +104,7 @@ Problem bo w pewnym momencie przy zamianie dla prlnego rax(tj. dla 0xffffff...) 
 0000090 0000 0000 0000 0000 0000 0000 0000 0000
 ```
 
-[x] Dla 200:
+ - [x] Dla 200:
 
 ```
 280571172992510140037611932413038677189525
@@ -114,7 +114,7 @@ Problem bo w pewnym momencie przy zamianie dla prlnego rax(tj. dla 0xffffff...) 
 0000080 f156 a9c5 cbbf 958e 728d 123b ab30 433d
 ```
 
-[x] Dla 250:
+ - [x] Dla 250:
 
 ```
 7896325826131730509282738943634332893686268675876375
@@ -145,7 +145,7 @@ W sensie że czasem wybiera że druga jest wieksza bo pierwsza jest ujemna :c
 
 TAK!
 
-[x] Dla 200:
+ - [x] Dla 200:
 
 ```
 280571172992510140037611932413038677189525
@@ -155,7 +155,7 @@ TAK!
 0000080 [7d0e aeb0 5c1c 864a e395 df17 cb83 f067]
 ```
 
-Dla 300:
+ - [x] Dla 300:
 
 ```
 222232244629420445529739893461909967206666939096499764990979600
@@ -167,7 +167,7 @@ Dla 300:
 
 **E12.s działa dla 300**
 
-[x] Wielkosc
+ - [x] Wielkosc
 
 Pomysl: Zmienic wielkosci
 
@@ -178,7 +178,7 @@ Dla 200:
 00003e0 [0338] 0000 0000 0000 [7d0e aeb0 5c1c 864a]
 00003f0 [e395 df17 cb83 f067] 0000 0000 0000 0000
 
-[x]Zmiana wypisywania
+ - [x]Zmiana wypisywania
 
 Tak ma być:
 
