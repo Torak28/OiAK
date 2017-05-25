@@ -11,7 +11,6 @@ N_INDEX = 200
 .comm druga, 1024
 .comm wynik, 1024
 .comm BE, 1024
-.comm preBE, 64
 
 .text
 .globl _start
@@ -51,17 +50,11 @@ ladowanie:
 ciag_fib:
 	movq (%r13), %rax
 	movq (%r14), %rbx
-	jmp ciag_fib2
-
-ciag_fib2:
 	popf
 	adcq %rbx, %rax
 	pushf
 	movq %rax, (%r13)
 	movq %rbx, (%r14)	
-	/*
-	Zamieniam r13 i r14 miejscami
-	*/
 	jmp zapisz_wynik
 
 zapisz_wynik:
