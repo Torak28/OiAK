@@ -32,7 +32,62 @@ Rozkaz **fld** wpisuje liczbę do *ST(0)* a ta która się tam znajdowała wcze�
 | fdivl |ZMIENNA/ADRES 	Dzieli zawartość ST(0) przez liczbę z pamięci |
 | fsqrt | Oblicza pierwiastek z liczby zapisanej w ST(0) i zapisuje wynik do ST(0) |
 
-xd
+### Control Word
+
+Idea Control worda to ustawienie precyzji obliczeń i sposobu zaokrąglania.
+
+Precyzje określają bity 8 i 9. '00' oznacza Pojedynczą,'10' Podwójną, a '11' Rozszerzoną:
+
+```
+Zaczynam z: 1111 1111 1111 1111 = 65535
+
+	Chce pojedyncza precyzje, czyli 1111 1100 1111 1111
+	Robie teraz AND mojej liczby z 0xFcFF i otrzymuje: 1111 1100 1111 1111
+	Brawo
+
+Zaczynam z: 1111 0011 1111 1111 = 62463
+
+	Chce pojedyncza precyzje, czyli 1111 0000 1111 1111
+	Robie teraz AND mojej liczby z 0xFcFF i otrzymuje: 1111 0000 1111 1111
+	Brawo
+
+Zaczynam z: 1111 1111 1111 1111 = 65535
+
+	Chce podwójną precyzję, czyli 1111 1110 1111 1111
+	Robie teraz AND mojej liczby z 0xFcFF i otrzymuje: 1111 1100 1111 1111
+	Robie XOR wyniku z 0x200 i otrzymuje 1111 1110 1111 1111
+	Brawo
+
+Zaczynam z: 1111 0011 1111 1111 = 62463
+
+	Chce podwójną precyzje, czyli 1111 0010 1111 1111
+	Robie teraz AND mojej liczby z 0xFcFF i otrzymuje: 1111 0000 1111 1111
+	Robie XOR wyniku z 0x200 i otrzymuje 1111 0010 1111 1111
+	Brawo
+```	
+	
+Tryb zaokrąglania ustala się w 10 i 11 bicie. I tak '00' to nearest even, '01' to w dół, '10' to w górę, a '11' to do zera
+```
+Zaczynam z: 1111 1111 1111 1111 = 65535
+
+	Chce zaokraglenie do najblizszej, czyli 1111 0011 1111 1111
+	Robie teraz AND mojej liczby z 0xF3FF i otrzymuje: 1111 0011 1111 1111
+	Brawo
+
+	Chce zaokraglenie do zera, czyli 1111 1111 1111 1111
+	Robie teraz OR mojej liczby z 0x0C00 i otrzymuje: 1111 0011 1111 1111
+	Brawo
+
+	Chce zaokraglenie do góry, czyli 1111 1011 1111 1111
+	Robie teraz OR mojej liczby z 0x0800   i otrzymuje: 1111 1111 1111 1111(ten Or ma racje bytu jak jest inne zaokraglenie niz zero)
+	Robie teraz ANDw yniku z 0xFBFF i otrzymuje: 1111 1011 1111 1111
+	Brawo
+
+	Chce zaokraglenie do dołu, czyli 1111 0111 1111 1111
+	Robie teraz OR mojej liczby z 0x0400   i otrzymuje: 1111 1111 1111 1111(ten Or ma racje bytu jak jest inne zaokraglenie niz zero)
+	Robie teraz AND wyniku z 0xF7FF i otrzymuje: 1111 0111 1111 1111
+	Brawo
+```
 
 
 
