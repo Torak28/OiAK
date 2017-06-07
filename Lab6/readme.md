@@ -89,5 +89,47 @@ Zaczynam z: 1111 1111 1111 1111 = 65535
 	Brawo
 ```
 
+### Teoretyczne funkcje F i G
+
+W **main.c**:
+```c
+#include <stdio.h>
+
+float f(float x);
+float g(float x);
+
+void set_fpu(int a, int b);
+
+```
+
+A sam szkielet funkcji:
+```asm
+bss
+.comm result, 4
+.comm input, 4
+
+.data
+one: .long 1
+
+.text
+.global g
+.type g, @function
+g:
+        movss %xmm0, input
+
+        flds input      #zaladowanie argumentu
+        
+	/*
+	Operacje matematyczne
+	*/
+
+        fstps result    #pobranie wyniku do pamieci
+        movss result, %xmm0     #przeniesienie arg doo zwrocenia
+
+        ret
+```
+
+
+
 
 
