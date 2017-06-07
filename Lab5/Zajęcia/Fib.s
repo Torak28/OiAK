@@ -7,7 +7,7 @@ BUFF = 16
 N_INDEX = 200
 
 
-format_d: .asciz "%lld",
+format_d: .asciz "%llx",
 nowa_linia: .asciz "\n"
 
 .bss
@@ -140,46 +140,21 @@ dalej:
 wypisz:
 	lea wynik, %r12
 	movq $0, %r13
-	movq $63, %r14
+	movq $127, %r14
 	jmp petla_wypisujaca
 
 petla_wypisujaca:
-	/*movq $SYSWRITE, %rax
-	movq $STDOUT, %rdi
-	movq %r12, %rsi
-	movq $BUFF, %rdx
-	syscall*/
-	
-	inc %r13
-	addq $16, %r12
-	cmp %r13, %r14
-	jge petla_wypisujaca
-	jmp wypiszBE
-	
-wypiszBE:
-	lea BE, %r12
-	movq $0, %r13
-	movq $63, %r14
-	jmp petla_wypisujacaBE
-
-petla_wypisujacaBE:
-	/*movq $SYSWRITE, %rax
-	movq $STDOUT, %rdi
-	movq %r12, %rsi
-	movq $BUFF, %rdx
-	syscall*/
-	
 	movq (%r12), %rsi
 	mov $0, %rax
 	mov $format_d, %rdi
 	call printf
-	
-	inc %r13
-	addq $16, %r12
-	cmp %r13, %r14
-	jge petla_wypisujacaBE
-	jmp koniec
 
+	inc %r13
+	addq $8, %r12
+	cmp %r13, %r14
+	jge petla_wypisujaca
+	jmp koniec
+	
 koniec:
 	mov $0, %rax 
 	mov $nowa_linia, %rdi 	
