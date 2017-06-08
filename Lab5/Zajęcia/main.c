@@ -12,7 +12,7 @@ int main(void){
 
 	wynik = my_rdtsc(a);
 
-	printf("Wynik1: %llu\n", wynik);
+	printf("Wynik: %llu\n", wynik);
 
 	return 0;
 }
