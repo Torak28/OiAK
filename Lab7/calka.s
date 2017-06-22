@@ -1,16 +1,16 @@
 .bss
 /* zmienne funkcji calkujacej */
 .comm precyzja, 4
-.comm begin, 4
-.comm end, 4
+.comm poczatekCalkowania, 4
+.comm koniecCalkowania, 4
 .comm suma, 4
 .comm _dx, 4
 
 
 /* zmienne funkcji g*/
-.comm x, 4
+.comm input, 4
 
-/* zmienne funkcji liczacej make_x */
+/* zmienne funkcji liczacej generujX */
 .comm xp, 4
 .comm i, 4
 .comm dx, 4
@@ -47,34 +47,33 @@ calka:
 	 */
 
         movq $0, %rsi
-        movq %rdi, precyzja(,%rsi,4)		#pobranie precyzjayzji
-        movss %xmm0, begin      		#pobranie dolnej granicy
-        movss %xmm1, end        		#pobranie gornej granicy
+        movq %rdi, precyzja(,%rsi,4)			#pobranie precyzjayzji
+        movss %xmm0, poczatekCalkowania      		#pobranie dolnej granicy
+        movss %xmm1, koniecCalkowania        		#pobranie gornej granicy
 
-        flds end        			#xk
-        fsub begin      			#(xk - xp)
-        fidiv precyzja      			#((xk - xp)/n
+        flds koniecCalkowania        			#xk
+        fsub poczatekCalkowania      			#(xk - xp)
+        fidiv precyzja      				#((xk - xp)/n
 
-        fstps _dx       			#pobranie wyliczonego przedzialu do _dx
+        fstps _dx       				#pobranie wyliczonego przedzialu do _dx
 
 	/*
-	 * kolejnym krokiem algorytmu jest wyliczenie
-	 * sumy wysokosci wszystkich prostokatow
+	 * Suma wysokosci
 	 * dla i = 1, 2,...,precyzja
-	 *  suma += g(make_x(xp, i, dx))
+	 *  suma += g(generujX(xp, i, dx))
 	 */
 
-        fldz    				#0 do st(0) - suma wszystkich wysokosci
+        fldz    					#0 do st(0) - suma wszystkich wysokosci
 
         petla:
-                movss begin, %xmm0     	 	#pierwszy argument dla make_x
-                        			#drugi argument jest w %rdi
-                movss _dx, %xmm1        	#trzeci argument
+                movss poczatekCalkowania, %xmm0     	#pierwszy argument dla generujX
+                        				#drugi argument jest w %rdi
+                movss _dx, %xmm1        		#trzeci argument
 
-                call make_x
+                call generujX
 
                 /*
-		 * w %xmm0 jest wynik make_x i jest od razu pierwszym
+		 * w %xmm0 jest wynik generujX i jest od razu pierwszym
                  * argumentem g(x)
 		 */
 
@@ -88,10 +87,10 @@ calka:
 
                 movss %xmm0, result
 
-                fadd result     		#dodanie na szczyt stosu wysokosci prostokata
+                fadd result     			#dodanie na szczyt stosu wysokosci prostokata
 
-                dec %rdi        		#dekrementuje licznik
-                cmp $0, %rdi    		#jesli 0 to konczymy prace
+                dec %rdi        			#dekrementuje licznik
+                cmp $0, %rdi    			#jesli 0 to konczymy prace
                 je koniec
                 jmp petla
 
@@ -118,7 +117,7 @@ calka:
 	 * %xmm1 - szerokosc prostokata          
 	 * wynik zwraca w %xmm0                  
 	 */
-make_x:
+generujX:
         pushq %rbp     			 #ramka stosu
         movq %rsp, %rbp
 
@@ -150,10 +149,10 @@ g:
         pushq %rbp
         movq %rsp, %rbp
 
-        movss %xmm0, x  # pobranie argumentu
+        movss %xmm0, input  # pobranie argumentu
 
-        flds x
-        fmul x  		#x^2
+        flds input
+        fmul input  		#x^2
 	fiadd jeden		#x^2+1
 	fsqrt			#sqrt(x^2+1)
         fld1
