@@ -23,7 +23,7 @@ g:
 	fisub jeden		#Odjecie 1	
 	
 
-        fstps result    #pobranie wyniku do pamieci
+        fstps result    	#pobranie wyniku do pamieci
         movss result, %xmm0     #przeniesienie arg doo zwrocenia
 
         ret
