@@ -1,0 +1,310 @@
+\documentclass[comsoc]{IEEEtran}
+\usepackage[T1]{fontenc}
+\usepackage[polish]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{enumitem}
+\usepackage{listings}
+\usepackage{float}
+\usepackage{biblatex}
+\usepackage{graphicx}
+\usepackage{mathtools}
+\usepackage[export]{adjustbox}
+\usepackage{caption}
+\selectlanguage{polish}
+\hyphenation{op-tical net-works semi-conduc-tor}
+\DeclarePairedDelimiter\floor{\lfloor}{\rfloor}
+
+
+\begin{document}
+	\title{Metody projektowania lepszych konwerterów odwrotnych z RNS}
+	\author{Wojciech Adles, 209853, Jarosław Ciołek-Żelechowski, 218386, Prowadzący projekt: dr inż. Piotr Patronik}
+	\maketitle
+	
+	
+	\begin{abstract}
+	Podczas semestru pracowaliśmy nad artykułem trzech członków IEEE, dotyczącym metody tworzenia konwerterów odwrotnych z RNS. Zaproponowali Oni model tworzenia bazy, który pozwala uogólnić i przyśpieszyć proces konwersji. Udało się nam zrozumieć założenia matematyczne artykułu, skonstruować swoje własne przykłady, a pod koniec zaimplementowaliśmy konwerter dla przykładowej bazy.
+	\end{abstract}
+	
+	\section{Wstęp}
+	Proces naszej pracy można podzielić na trzy etapy: zrozumienie założeń matematycznych dla liczb w systemie dziesiętnym, zrozumienie założeń matematycznych dla liczb w systemie binarnym, implementacja wybranego przykładu konwertera. Zanim jednak mogliśmy się zmierzyć z matematyką zawartą w artykule musieliśmy sobie odpowiedzieć na pytanie: Dlaczego korzysta się z arytmetyki resztowej? Okazuje się że system ten pozwala na dodawanie korzystając z jednopoziomowych drzew CSA, co sprawia że układ nie musi czekać na propagujące przeniesienia. Tym samym obliczenia wykonują się znacznie szybciej niż w przypadku binarnym. Niestety, systemy resztowe mają swoje wady. Sama konwersja na RNS i z powrotem jest procesem kosztownym. Trzeba więc znajdować takie zastosowania w których nadrabianie szybkości przez RNS, zniweluje opóźnienia wynikające z konwersji. Dodatkowo wybór bazy nie jest łatwy, a kluczowy w całym procesie, jako że wpływa bezpośrednio na rozdzielczość, czyli możliwość zapisu liczb z danego przedziału, o danej szerokości.
+	
+	\section{Matematyka dla Systemu Dziesiętnego}
+	Można powiedzieć że był to kluczowy etap naszego projektu. To tutaj została wykonana przeważająca ilość naszej pracy związana z przyswojeniem materiału, próba zrozumienia i poukładania sobie wszystkiego. Poniżej przedstawimy rozumowanie dla konkretnej bazy resztowej RNS (opisanej w artykule) i konkretnej bazy resztowej wybranej przez nas.
+	
+	\subsection{RNS \{$2^{n+\beta}, 2^n\pm1, 2^n\pm k_{1}$\}}
+	
+	Początkowo zakładamy wartości dla $\beta$ i $n$ równe 4, oraz wartość $k_{1}$ na 3. Zgodnie z tymi założeniami, otrzymujemy bazę RNS równą \{256, 15, 17, 13, 19\}. A następnie wybieramy liczbę $X$ której konwersję dokonamy, w naszym przypadku wynosiła ona 3 394 562. Dzielimy ją modulo przez kolejne elementy bazy otrzymując tym samym naszą bazę reszt \{2, 2, 2, 2, 3\}. Korzystając z równania:
+	
+	\begin{equation} \label{eq:mdaszek}
+	\hat{m_{i}}=RNS_{0}*RNS_{1}*...*RNS_{i-1}*RNS_{i+1}*...
+	\end{equation}
+	
+	Łatwo wyliczyć poszczególne $\hat{m_{i}}$. Tak dla przykładu przeliczę dla $\hat{m_{1}}$:
+	
+	\begin{equation} \label{eq:mdaszek1}
+	\begin{aligned}
+	\hat{m_{1}}{} & =RNS_{2}*RNS_{3}*RNS_{4}*RNS_{5}\\& = 15 * 17 * 13 * 19\\& = 62985
+	\end{aligned}
+	\end{equation}
+	
+	Tym samym tablica $\hat{m_{i}}$ prezentuje się następująco: \{62 985, 1 074 944, 948 480, 1 240 320, 848 640\}.
+	
+	Następnie posiadając już $\hat{m_{i}}$ możemy policzyć odwrotności multiplikatywne modulo, wykorzystując wzór:
+	
+	\begin{equation} \label{eq:multiplikat}
+	|\hat{m_{i}}^{-1}|_{m_{i}} = \hat{m_{i}}^{-1} \bmod RNS_{i}
+	\end{equation}
+	
+	Dla $i=1$ jest to:
+	
+	\begin{equation} \label{eq:multiplikatm1}
+	|\hat{m_{1}}^{-1}|_{m_{1}} = 62985^{-1} \bmod 256 = 57
+	\end{equation}
+	
+	Po wyliczeniu wszystkich $|\hat{m_{i}}^{-1}|_{m_{i}}$ otrzymamy: \{57, 14, 16, 9, 4\}. Tym samymym możemy przystąpić do liczenia $V$, ze wzoru:
+	
+	\begin{equation} \label{eq:Vogol}
+	V_{i} = |\hat{m_{i}}^{-1}|_{m_{i}} * \frac{\hat{m_{i}}}{m_{i}}
+	\end{equation}
+	
+	Przy czym warto podkreślić że licząc $V_{1}$ należy wziąć podłogę z całości. Dla przykładu policzę wartość dla $V_{2}$:
+	
+	\begin{equation} \label{eq:V1}
+	\begin{aligned}
+	V_{2}{} & =|\hat{m_{2}}^{-1}|_{m_{2}} * \frac{\hat{m_{2}}}{m_{2}}\\& = 14 * \frac{62985}{256}\\& = 14024
+	\end{aligned}
+	\end{equation}
+	
+	I tak $V_{i}$ prezentują się następująco: \{14 024, 58 786, 59 280, 43 605, 13 260\}. W tym momencie możemy już przystąpić do liczenia $v_{i}$, które to już w dalszej części układu z Rysunku \ref{fig:2} trafiają na wejścia konwertera.
+	
+	\begin{equation} \label{eq:vogol}
+	v_{i} = |V_{i}R_{i}|_{\hat{m_{1}}}
+	\end{equation}
+	
+	Korzystając z powyższego wzoru liczymy dla $i=1$:
+	
+	\begin{equation} \label{eq:v1}
+	v_{1} = |V_{1}R_{1}|_{\hat{m_{1}}} = (14 024 * 2) \bmod 62985 = 28 048
+	\end{equation}
+	
+	Tym samym tablica $v_{i}$ prezentuje się następująco: \{28 048, 54 587, 55 575, 24 225, 39 780\}
+	
+	Można powiedzieć że w tym momencie uzyskaliśmy wszystkie dane potrzebne do wyliczanie głównego równania:
+	
+	\begin{equation} \label{eq:wielkie}
+	\left|\floor*{\frac{X}{m_{1}}}\right|_{\hat{m_{1}}} = \left|\sum_{i=1}^{5}v_{i}\right|_{\hat{m_{1}}}
+	\end{equation}
+	
+	Co daje nam:
+	
+	\begin{equation} \label{eq:wielkieWynikL}
+	L = \left|\floor*{\frac{391 170}{256}}\right|_{\hat{m_{1}}} = 13260 \bmod 62985 = 13260
+	\end{equation}
+	\begin{equation} \label{eq:wielkieWynikP}
+	\begin{aligned}
+	P {} & = \left|\sum_{i=1}^{5}v_{i}\right|_{\hat{m_{1}}}\\& = (28048+54587+55575+24225+39780) \bmod 62985\\& = 202215 \bmod 62985\\& = 13260
+	\end{aligned}
+	\end{equation}
+	\begin{equation} \label{eq:wielkieWynik}
+	L = P
+	\end{equation}
+	
+	Dzięki temu wyliczenia dla systemu dziesiętnego można uznać za skończone.
+	
+	\subsection{RNS \{$2^{n+\beta}, 2^n\pm1, 2^n\pm k_{1},...,2^{n}\pm k_{f}$\}}
+	Dla innych baz powyższe wzory nadal są wartościowe i nadal gwarantują prawidłowe wyniki. Wynika to ze sposobu tworzenia bazy, który szczegółowo został opisany w Rozdziale 2 artykułu \cite{1}.
+	
+	\section{Matematyka dla Systemu Dwójkowego}
+	
+	W tej części pominiemy wszystkie wyliczenia aż do uzyskania $v_{i}$, jako że są one identyczne jak powyżej. Mamy więc wektor  $v_{i}$ równy: \{28 048, 54 587, 55 575, 24 225, 39 780\}. Jego binarna wersja:
+	
+	\begin{equation} \label{eq:csa1}
+	\begin{aligned}
+	v_{1} = 0110~1101~1001~0000,\\
+	v_{2} = 1101~0101~0011~1011,\\
+	v_{3} = 1101~1001~0001~0111,\\
+	v_{4} = 0101~1110~1010~0001,\\
+	v_{5} = 1001~1011~0110~0100.
+	\end{aligned}
+	\end{equation}
+	
+	\begin{figure}[h]
+		\centering
+		\includegraphics[width=0.7\linewidth]{1}
+		\captionsetup{justification=centering}
+		\caption{Schemat Układu}
+		\label{fig:2}
+	\end{figure}
+
+	Jak widać na Rysunku \ref{fig:2} sygnały $v_{i}$ są naszymi wejściami do układu. I tak wyniki pierwszego sumatora CSA wyglądają następująco:
+	
+	\begin{equation} \label{eq:csa2}
+	\begin{aligned}
+	v_{1}& = 0110~1101~1001~0000,\\
+	v_{2}& = 1101~0101~0011~1011,\\
+	v_{3}& = 1101~1001~0001~0111,\\
+	s_{1}& = 0110~0001~1011~1100,\\
+	c_{1}& = 1011~1010~0010~0110,\\
+	p_{1}& = 1.
+	\end{aligned}
+	\end{equation}
+	
+	Powyższy schemat trzeba rozumieć jako trzy wektory wejściowe $v_{1}$, $v_{2}$, $v_{3}$, wektor sumy $s_{1}$, wektor przeniesienia $c_{1}$, oraz przeniesienie z ostatniej operacji dodawanie jako $p1$.
+	
+	Dla kolejnych sumatorów postępujemy analogicznie, zwracając uwagę na wejścia. I tak dla drugiego sumatora:
+	
+	\begin{equation} \label{eq:csa3}
+	\begin{aligned}
+	c_{1}& = 1011~1010~0010~0110,\\
+	s_{1}& = 0110~0001~1011~1100,\\
+	v_{4}& = 0101~1110~1010~0001,\\
+	s_{2}& = 1000~0101~0011~1011,\\
+	c_{2}& = 1111~0101~0100~1000,\\
+	p_{2}& = 0.
+	\end{aligned}
+	\end{equation}
+	
+	I dla trzeciego sumatora CSA:
+	
+	\begin{equation} \label{eq:csa4}
+	\begin{aligned}
+	c_{2}& = 1111~0101~0100~1000,\\
+	s_{2}& = 1000~0101~0011~1011,\\
+	v_{5}& = 1001~1011~0110~0100,\\
+	s_{3}& = 1110~1011~0001~0111,\\
+	c_{3}& = 0010~1010~1101~0000,\\
+	p_{3}& = 1.
+	\end{aligned}
+	\end{equation}
+	
+	Mając już wartości wszystkich trzech sumatorów CSA, potrzebujemy wyliczyć wartość $k_{c}$. Korzystamy więc ze wzoru:
+	
+	\begin{equation} \label{eq:kc}
+	\begin{aligned}
+	k_{c}{}& = 2^{2n}(k_{1}^{2} + 1) - k_{1}^{2}\\& = 2^{8}(3^{2}+1)-3^{2}\\&=256*10-9\\&=2551
+	\end{aligned}
+	\end{equation}
+	
+	Następnie dodajemy nasze przeniesienia:
+	\begin{equation} \label{eq:csa4}
+	\begin{aligned}
+	przeniesienie{}=p1+p2+p3=2
+	\end{aligned}
+	\end{equation}
+	
+	I mnożymy wynik $przeniesienie$ z wartością $k_{c}$:
+	
+	\begin{equation} \label{eq:csa4}
+	\begin{aligned}
+	2k_{c} {}& = 2 * 2551 = 5102_{(10)}\\& = 0001.0011.1110.1110_{(2)}
+	\end{aligned}
+	\end{equation}
+	
+	W tym momencie $2k_{c}$, $s_{3}$ i $c_{3}$ trafiają do modułu opisanego w Rysunku \ref{fig:2} jako CSA+KSA. Jest to jeden poziom CSA, którego wyniki trafiają potem do KSA. I tak CSA prezentuje się następująco:
+	
+	\begin{equation} \label{eq:csa4}
+	\begin{aligned}
+	s_{3}& = 1110~1011~0001~0111,\\
+	c_{3}& = 0010~1010~1101~0000,\\
+	2k_{c}& = 0001~0011~1110~1110,\\
+	s_{4}& = 1101~0010~0010~1001,\\
+	c_{4}& = 0101~0111~1010~1100,\\
+	p_{4}& = 0.
+	\end{aligned}
+	\end{equation}
+	
+	Oraz KSA, w którym dodajemy już z propagacją przeniesienia:
+	
+	\begin{equation} \label{eq:csa4}
+	\begin{aligned}
+	s_{4} = 1101~0010~0010~1001,\\
+	c_{4} = 0101~0111~1010~1100,\\
+	wynik = 1~0010~1001~1101~0101. 
+	\end{aligned}
+	\end{equation}
+	
+	Warto zwrócić tutaj na szerokość $wynik$ zgodną z Rysunek \ref{fig:2}. Dalej, przechodzimy do FinalConvertera, opisanego szczegółowo w \cite{17}. Z naszej perspektywy jest to zwykły układ dzielenia modulo:
+	
+	\begin{equation} \label{eq:csa4}
+	\begin{aligned}
+	1~0010~1001~1101~0101_{(2)}& = 76245_{(10)}, \\
+	76245 \bmod 62985& = 13260.
+	\end{aligned}
+	\end{equation}
+	
+	Dzięki czemu można znowu powiedzieć, jak pod koniec Rozdziału 2, że $L=P$. Tutaj jednak układ z Rysunku \ref{fig:2} proponuje  nam jeszcze konkatenacje uzyskanego wyniku z $R_{1}$:
+	
+	\begin{equation} \label{eq:csa4}
+	\begin{aligned}
+	13260_{(10)}& = 0011~0011~1100~1100_{(2)},\\
+	R_{1}& = 2{(10)} = 0000~0010_{(2)},\\
+	X& = 11~0011~1100~1100~0000~0010_{(2)}=3394562_{10}.
+	\end{aligned}
+	\end{equation}
+	
+	Tym samym uzyskujemy liczbę z samego początku Rozdziału 1.
+	
+	\section{Sprawdzenie szerokości otrzymanych danych}
+	
+	Zajmując się układem z Rysunku \ref{fig:2} można zauważyć pewne zależności dotyczące szerokości danych. Samo wejście układu, tj. $v_{i}$ jest szerokości $4n$, czyli w naszym, omawianym wyżej wypadku 16. Trzy liczby o szerokości 16 bitów trafiają na drzewo CSA, które zwraca jeden bit przeniesienia i dwie liczby 16 bitowe. Sama ta operacja, jak i analogiczne trzy kolejne z punktu widzenia szerokości danych są bezpieczne. Maksymalne liczby podane na wejściu po dodaniu i tak można zmieścić na dwóch wektorach 16 bitowych i jednym bicie przeniesienia, co pokazano poniżej:
+	
+	\begin{equation} \label{eq:csaMaks}
+	\begin{aligned}
+	v_{1}& = 1111~1111~1111~1111,\\
+	v_{2}& = 1111~1111~1111~1111,\\
+	v_{3}& = 1111~1111~1111~1111,\\
+	s_{1}& = 1111~1111~1111~1111,\\
+	c_{1}& = 1111~1111~1111~1110,\\
+	p_{1}& = 1.
+	\end{aligned}
+	\end{equation}
+	
+	Inaczej się ma sprawa z sumatorem $CSA+KSA$ na samym końcu. Otrzymuje On trzy liczby 16 bitowe na wejściu i zwraca jedną 17 bitową. Dla maksymalnych danych wejściowych drzewo CSA zachowa się prawnie identycznie jak w równaniu powyżej. Różnica polega tylko na tym że nie generowany jest bit przeniesienia, a w wyniku czego na sumator KSA trafiają dwie liczby 17 bitowe. Poniżej pokazujemy najgorszy możliwy przypadek, w którym to na drzewo CSA podajemy maksymalne liczby, które przekazane dalej do KSA wyglądają następująco:
+	
+	\begin{equation} \label{eq:csaMaksKSA}
+	\begin{aligned}
+	s_{1}& = 0~1111~1111~1111~1111,\\
+	c_{1}& = 1~1111~1111~1111~1110,\\
+	wynik& = 10~1111~1111~1111~1101.
+	\end{aligned}
+	\end{equation}
+	
+	Jak widać szerokość wyniku to 18 bitów, kiedy my zgodnie z układem mamy tylko 17. Jak to?
+	
+	\subsection{Bruteforce}
+	
+	Uznaliśmy że zaczniemy od próby wygenerowania najgorszego przypadku dla opisywanego przez nas przykładu Bazy. Napisaliśmy skrypt Pythonowy generujący wszystkie możliwe 16 124 160 kombinacji reszt i szukaliśmy maksymalnego wyniku po zakończenia pracy przez sumator KSA. Okazało się że dla zadanej bazy każdy wynik mieści się na 17 bitach. Warto dodać że maksymalny wynik nie uzyskujemy podając na $v_{i}$ maksymalnych liczb do zapisania na 16 bitach. Sposób naszych operacji, a dokładnie odcinanie najstarszego bitu przeniesienia na każdym z drzew CSA powoduje że generowanie najgorszego przypadku nie jest takie proste. Dla Naszej bazy maksymalną liczbę pod koniec działania sumatora KSA generuje baza resztowa \{82, 2, 6, 4, 7\}.
+	
+	\subsection{Uzasadnienie matematyczne}
+	
+	Wejście układu tj. $v_{i}$ generowane jest zgodnie z wzorem \ref{eq:Vogol}, gdzie jak widać ograniczamy liczbę operacją modulo $\hat{m_{1}}$. I to niezależnie od tego które $v_{i}$ liczymy. Samo $m_{1}$ jest zgodnie z artykułem zawsze wielokrotnością liczby 2, a co więcej jest największą liczbą w bazie, a tym samym najmniejszym z $\hat{m_{i}}$. Sposób jej generacji dodatkowo zapewnia jej nieparzystość, którą potem korygujemy przy generowaniu $V_{i}$. Te wszystkie właściwości, plus te wynikające z bycia liczbą względnie pierwszą z resztą liczb w bazie sprawia że uzyskujemy liczbę porównywalną z maksymalną do zapisania na danej szerokości, która to zawiera się między maksymalną liczbą do zapisania na danej szerokości , a maksymalną liczbą do zapisania na danej szerokości - $3k_{c}$. Tym samym zyskujemy pewność że nasze wyniki się zmieszczą.
+	
+	
+	
+	\section{Implementacja Wybranego Konwertera}
+	Ostatnim etapem wykonanego przez nas projektu, było przeniesienie zdobytej przez nas abstrakcyjnej wiedzy na praktycznie działający moduł konwertera.
+	Do jego wykonania, użyliśmy środowiska programistycznego Xilinx ISE.
+	Zgodnie z założeniami, konwerter ten miał działać w określonej z góry bazie, co znacząco ułatwiło jego implementacje. Każdy element schematu staraliśmy się napisać 
+	w stopniu zbliżonym do rzeczywistej sprzętowej realizacji. Tak więc np. moduł drzewa CSA składa się z podmodułów sumatora pełnego, który z kolei jest złożony z 2 półsumatorów,
+	które są zbudowane z bramek XOR i AND. Oczywiście w przypadku skomplikowanych działań matematycznych, które między innymi miały miejsce przy konwersji zbioru reszt na odpowiednie wektory
+	nie wchodziliśmy tak głęboko w strukturę modułów, pozwalając zsyntezować je naszemu środowisku. Implementacja sprzętowa struktur znanych z kursu Architektury Komputerów,
+	była dobrą powtórką materiału, a śledzenie wykonywania symulacji "bit po bicie"~pozwoliło nam na lepsze zrozumienie ich zasad działania. Dla wykonanego układu
+	przeprowadziliśmy serię symulacji, która potwierdziła prawidłowe działanie napisanego przez nas konwertera, otrzymując na jego wyjściu oczekiwaną liczbę.
+	
+	\section{Wnioski}
+	Podsumowując projekt z perspektywy czasu, jesteśmy zadowoleni z jego wyników. Jeszcze pół roku temu rzecz dla nas abstrakcyjna, jaką był konwerter liczb z systemu resztowego na binarny
+	zdawał się być układem którego działanie przekraczało znacznie naszą dotychczasową wiedzę. Dzisiaj można zaryzykować stwierdzenie, że o ile zdolność twórczego projektowania takich
+	rozwiązań nie jest jeszcze w naszym zasięgu, to zrozumienie złożonych układów jakim niewątpliwie jest poznany przez nas konwerter, jest rzeczą zupełnie dla nas realną.
+	Wymaga to jednak sporego nakładu pracy, dzięki której możliwa staje się faktyczna implementacja badanej struktury.
+	
+	\begin{thebibliography}{1}
+		
+		\bibitem{17}
+		G. Alia and E.Martinelli, "Designing multioperand modular adders," \emph{Electron. Lett.}, vol. 32, no. 1, pp. 22-23, Jan. 1996.
+		\bibitem{1}
+		H. Pettenghi, R.Chaves, L.Sousa, "Method to Design General RNS Reverse Converters for Extended Moduli Sets," \emph{Express briefs}, vol. 60, no. 12, 12, Dec. 2013. 
+		
+	\end{thebibliography}
+\end{document}
+
+
